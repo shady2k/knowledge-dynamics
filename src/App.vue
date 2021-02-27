@@ -10,8 +10,7 @@
             <Header />
           </div>
           <div id="subcontainer-content" class="flex-1 w-full h-full">
-            <img alt="Vue logo" src="./assets/logo.png">
-            <HelloWorld msg="Welcome to Your Vue.js App"/>
+            <Element />
           </div>
         </div>
       </div>
@@ -20,14 +19,14 @@
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Element from './components/Element.vue'
 import Sidebar from './components/Sidebar.vue'
 import Header from './components/Header.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld,
+    Element,
     Sidebar,
     Header
   }
