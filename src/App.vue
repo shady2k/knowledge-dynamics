@@ -29,6 +29,8 @@ export default {
     Element,
     Sidebar,
     Header
+  },
+  mounted() {
   }
 }
 </script>
