@@ -7,8 +7,12 @@
             class="ml-1 mr-6 text-black w-full text-lg flex"
             @click="clickDiv"
         >
-            <span v-if="!isEdit" class="text-justify" @click="clickSpan">
-                {{ data }}
+            <span v-if="!isEdit" 
+                class="text-justify"
+                :class="{ grayed: !data }"
+                @click="clickSpan"
+            >
+                {{ data ? data : "Нажмите здесь, чтобы начать редактирование" }}
             </span>
             <textarea
                 v-if="isEdit"
@@ -34,15 +38,25 @@ export default {
     },
     mounted() {
     },
+    asyncComputed: {
+        block: {
+            get() {
+                return this.$store.dispatch('getBlock', this.blockId).then((response => {
+                    return response;
+                }));
+            },
+            default: {}
+        }
+    },
     computed: {
         data: {
             get: function() {
-                let block = null;
-                block = this.$store.state.element.blocks.find((item) => {
-                    return item.id === this.blockId;
-                });
+                this.$log.debug(this.block);
+                let block = this.block;
                 if (!block) {
-                    block.data = "Нажмите здесь, чтобы начать редактирования";
+                    block = {
+                        data: ""
+                    }
                 }
                 return block.data;
             },
@@ -102,5 +116,8 @@ export default {
     background-clip: content-box;
     border: 4px solid transparent;
     background-color: black;
+}
+.grayed {
+    @apply text-gray-300;
 }
 </style>
