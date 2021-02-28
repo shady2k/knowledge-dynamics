@@ -34,7 +34,7 @@
 <script>
 export default {
     props: {
-        blockId: Number
+        blockId: String
     },
     mounted() {
     },

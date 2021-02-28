@@ -28,6 +28,9 @@ export default {
             return this.$store.state.element.title;
         },
         blocks() {
+            if(this.$store.state.element.blocks.length === 0) {
+                this.$store.commit('addBlock');
+            }
             return this.$store.state.element.blocks;
         },
     },
