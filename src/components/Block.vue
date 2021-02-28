@@ -20,9 +20,10 @@
                 v-model="data"
                 autocapitalize="none"
                 rows="1"
-                ref="editor"
+                :ref="'editor-' + blockId"
                 role="textbox"
                 @keydown.esc="$event.target.blur()"
+                @keydown.enter="addNewBlock"
                 v-autogrow
                 class="break-words overflow-hidden bg-transparent resize-none outline-none w-full bg-white"
             >
@@ -37,6 +38,9 @@ export default {
         blockId: String
     },
     mounted() {
+        if(this.$store.state.editor.activeBlock === this.blockId) {
+            this.focusBlock(this.blockId);
+        }
     },
     asyncComputed: {
         block: {
@@ -51,7 +55,6 @@ export default {
     computed: {
         data: {
             get: function() {
-                this.$log.debug(this.block);
                 let block = this.block;
                 if (!block) {
                     block = {
@@ -71,6 +74,17 @@ export default {
         };
     },
     methods: {
+        focusBlock: function(blockId) {
+            this.isEdit = true;
+            this.$nextTick(() => {
+                this.$refs["editor-" + blockId].focus();
+                this.$refs["editor-" + blockId].setSelectionRange(0, 0);
+            });
+        },
+        addNewBlock: async function(e) {
+            e.preventDefault();
+            this.$store.dispatch('addNewBlock');
+        },
         clickDiv: function(e) {
             if (!this.isEdit) {
                 this.clickSpan(e);
@@ -93,8 +107,8 @@ export default {
 
             this.isEdit = !this.isEdit;
             this.$nextTick(() => {
-                this.$refs.editor.focus();
-                this.$refs.editor.setSelectionRange(start, end);
+                this.$refs["editor-" + this.blockId].focus();
+                this.$refs["editor-" + this.blockId].setSelectionRange(start, end);
             });
         },
         blurElement: function() {

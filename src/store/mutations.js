@@ -8,8 +8,7 @@ export default {
             data: ''
         }
         if(obj) {
-            obj.title ? block.title = obj.title : '';
-            obj.data ? block.data = obj.data : '';
+            Object.assign(block, obj);
         }
         state.element.blocks.push(block);
     },
@@ -20,4 +19,7 @@ export default {
         });
         block.data = obj.data;
     },
+    setActiveBlock(state, blockId) {
+        state.editor.activeBlock = blockId;
+    }
 };

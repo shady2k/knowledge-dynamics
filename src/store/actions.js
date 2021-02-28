@@ -1,4 +1,16 @@
+import utils from './utils';
+
 export default {
+    addNewBlock(store) {
+        const id = utils.generateUUID();
+        const block = {
+            id
+        }
+        store.commit('addBlock', block);
+        store.commit('setActiveBlock', id);
+        return id;
+    },
+
     getBlock(store, blockId) {
         let block = null;
         block = store.state.element.blocks.find((item) => {
@@ -10,4 +22,8 @@ export default {
             return block;
         }
     },
+
+    focusBlock(store, blockId) {
+
+    }
 };
