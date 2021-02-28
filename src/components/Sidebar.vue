@@ -1,5 +1,5 @@
 <template>
-    <div id="sidebar" class="inset-y-0 h-full w-80 shadow bg-gray-700">
+    <div id="sidebar" class="inset-y-0 h-full w-80 shadow bg-gray-700 hidden lg:block">
         <div class="flex flex-col w-full h-full">
             <div id="sidebar-main" class="flex-1 mt-10 ml-5 text-left text-white grid grid-cols-1 grid-flow-row auto-rows-max gap-4 text-lg">
                 <div>
