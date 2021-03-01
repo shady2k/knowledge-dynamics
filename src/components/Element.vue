@@ -6,10 +6,10 @@
                 class="flex flex-col mt-3"
             >
                 <section
-                    v-for="item in schema"
-                    :key="'block-'+item.schemaId"
+                    v-for="item in structure"
+                    :key="'block-'+item.id"
                 >
-                    <Block :schemaId="item.schemaId" />
+                    <Block :blockId="item.id" />
                 </section>
             </div>
     </div>
@@ -25,13 +25,13 @@ export default {
     },
     computed: {
         title() {
-            return this.$store.state.element.title;
+            return this.$store.getters.getElementTitle;
         },
-        schema() {
-            if(this.$store.state.element.schema.length === 0) {
-                this.$store.commit('addBlock');
+        structure() {
+            if(this.$store.getters.getStructureLength === 0) {
+                this.$store.commit('addBlockToTheEnd', { data: 'test' });
             }
-            return this.$store.state.element.schema;
+            return this.$store.getters.getStructure;
         },
     },
 };

@@ -4,6 +4,7 @@ import { createLogger } from 'vuex'
 //import blocks from './modules/blocks'
 import mutations from './mutations'
 import actions from './actions'
+import getters from './getters'
 import { state } from './state'
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -12,6 +13,7 @@ Vue.use(Vuex);
 const loggerOptions = {
   collapsed: false, // auto-expand logged mutations
   filter (mutation /*, stateBefore, stateAfter*/) {
+    console.table(mutation);
     // returns `true` if a mutation should be logged
     // `mutation` is a `{ type, payload }`
     return mutation.type !== "aBlocklistedMutation"
@@ -44,6 +46,7 @@ export default new Vuex.Store({
   state,
   actions,
   mutations,
+  getters,
   modules: {
   },
   strict: true,
