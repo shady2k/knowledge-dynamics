@@ -1,14 +1,96 @@
-import utils from './utils';
+import utils from "./utils";
 
 export default {
     addBlockToTheEnd(state, obj) {
-        state.element.addToTheEnd(obj);
+        const schemaId = utils.generateUUID();
+        const blockId = utils.generateUUID();
+        const block = {
+            blockId,
+            data: obj.data,
+        };
+        this.commit('addBlock', block);
+
+        state.element.schema.push({
+            schemaId,
+            blockId,
+            parentId: null,
+            children: [],
+        });
+        state.element.length++;
     },
-    /*addNewBlock(state, schemaId) {
-        console.log(schemaId);
+
+    changeBlock(state, obj) {
+        state.element.blocks.some((element) => {
+            if (element.blockId == obj.blockId) {
+                element.data = obj.data;
+                return true;
+            } else {
+                return false;
+            }
+        });
     },
-    addBlock(state) {
-        /*let block = {};
+
+    addBlock(state, block) {
+        state.element.blocks.push(block);
+    },
+
+    addBySchemaId: function(state, obj) {
+        const schemaIdNew = utils.generateUUID();
+        const blockIdNew = utils.generateUUID();
+        const type = obj.type;
+        const schemaId = obj.schemaId;
+        const block = obj.block || {
+            blockId: blockIdNew,
+            data: "",
+        };
+        this.commit('addBlock', block);
+
+        let schema = {
+            schemaId: schemaIdNew,
+            blockId: blockIdNew,
+            parentId: null,
+            children: [],
+        }
+
+        function findAndPush(data, schemaId, type) {
+            let result = null;
+
+            data.some((e, index) => {
+                if (e.schemaId == schemaId) {
+                    result = e;
+                    if (!e.children) e.children = [];
+                    
+                    if (type === "unshift") {
+                        schema.parentId = e.schemaId;
+                        e.children.unshift(schema);
+
+                    } else if(type === "push") {
+                        schema.parentId = e.schemaId;
+                        e.children.push(schema);
+
+                    } else if(type === "splice") {
+                        if(!e.parentId) {
+                            state.element.schema.splice(index + 1, 0, schema);
+                        } else {
+                            schema.parentId = e.parentId;
+                            e.splice(index + 1, 0, schema);
+                        }
+                    }
+
+                    return;
+                }
+                if (!result && e.children) {
+                    result = findAndPush(e.children, schemaId, type);
+                }
+            });
+        }
+
+        findAndPush(state.element.schema, schemaId, type);
+        this.commit("setActiveBlock", schemaIdNew);
+    },
+
+    //addBlock(state) {
+    /*let block = {};
         const blockTemplate = {
             id: utils.generateUUID(),
             title: '',
@@ -36,13 +118,14 @@ export default {
     //     });
     //     block.data = obj.data;
     // },
-    // setActiveBlock(state, schema) {
-    //     state.editor.activeBlock = schema;
-    // },
-    // unsetActiveBlock(state) {
-    //     state.editor.activeBlock = null;
-    // },
+    setActiveBlock(state, schema) {
+        state.editor.activeBlock = schema;
+    },
+
+    unsetActiveBlock(state) {
+        state.editor.activeBlock = null;
+    },
     // identBlock(state, blockId) {
 
     // }
-}
+};

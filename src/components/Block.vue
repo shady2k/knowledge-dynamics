@@ -1,14 +1,14 @@
 <template>
-    <div :id="'component-'+blockId" class="flex flex-row">
-        <div :id="'bullet-'+blockId" class="flex mt-2">
+    <div :id="'component-'+schemaId" class="flex flex-row">
+        <div :id="'bullet-'+schemaId" class="flex mt-2">
             <span class="bullet"></span>
         </div>
         <div
-            :id="'level-'+blockId"
+            :id="'level-'+schemaId"
             class="w-full"
         >
             <div
-                :id="'block-row-'+blockId"
+                :id="'block-row-'+schemaId"
                 class="ml-1 mr-6 text-black w-full text-lg flex"
                 @click="clickDiv"
             >
@@ -30,18 +30,19 @@
                     v-model="data"
                     autocapitalize="none"
                     rows="1"
-                    :ref="'editor-' + blockId"
+                    :ref="'editor-' + schemaId"
                     role="textbox"
                     @keydown.esc="blur"
                     @keydown.enter="addNewBlock"
                     v-autogrow
+                    :class="{ 'block-active': isEdit }"
                     class="break-words overflow-hidden bg-transparent resize-none outline-none w-full bg-white"
                 >
                 </textarea>
             </div>
-            <div :id="'component-children-'+blockId" class="flex flex-col">
-                <section v-for="item in children" :key="'block-' + item.blockId">
-                    <Block :blockId="item.blockId" />
+            <div :id="'component-children-'+schemaId" class="flex flex-col">
+                <section v-for="item in schema.children" :key="'block-' + item.schemaId">
+                    <Block :schemaId="item.schemaId" :blockId="item.blockId" />
                 </section>
             </div>
         </div>
@@ -57,11 +58,13 @@ export default {
         Block,
     },
     props: {
-        blockId: String,
+        schemaId: String,
+        blockId: String
     },
     mounted() {
-        if (this.$store.state.editor.activeBlock === this.blockId) {
-            this.focusBlock(this.blockId);
+        this.$log.debug(this.$store.state);
+        if (this.$store.state.editor.activeBlock === this.schemaId) {
+            this.focusBlock(this.schemaId);
         }
     },
     asyncComputed: {
@@ -87,6 +90,34 @@ export default {
         },*/
     },
     computed: {
+        block: {
+            get: function() {
+                return this.$store.getters.getBlockById(this.blockId);
+            },
+            // set: function(data) {
+            //     this.$store.commit("changeBlock", { 
+            //         blockId: this.block.blockId, 
+            //         data
+            //     });
+            // }
+        },
+        schema: function() {
+            return this.$store.getters.getSchemaById(this.schemaId);
+        },
+        data: {
+            get: function() {
+                return this.block.data;
+            },
+            set: function(data) {
+                this.$store.commit("changeBlock", { 
+                    blockId: this.blockId, 
+                    data
+                });
+            }
+        },
+        children: function() {
+            return this.block.children;
+        }
         /*data: {
             get: function() {
                 let block = this.block;
@@ -118,16 +149,20 @@ export default {
         };
     },
     methods: {
-        focusBlock: function(blockId) {
+        focusBlock: function(shcemaId) {
             this.isEdit = true;
             this.$nextTick(() => {
-                this.$refs["editor-" + blockId].focus();
-                this.$refs["editor-" + blockId].setSelectionRange(0, 0);
+                this.$refs["editor-" + shcemaId].focus();
+                this.$refs["editor-" + shcemaId].setSelectionRange(0, 0);
             });
         },
         addNewBlock: async function(e) {
             e.preventDefault();
-            this.$store.commit("addNewBlock", this.schema.blockId);
+            this.$store.dispatch("addNewBlock", { 
+                    schemaId: this.schemaId,
+                    block: null
+                }
+            );
         },
         clickDiv: function(e) {
             if (!this.isEdit) {
@@ -155,15 +190,15 @@ export default {
             this.isEdit = !this.isEdit;
             this.$store.commit("setActiveBlock", this.schema);
             this.$nextTick(() => {
-                this.$refs["editor-" + this.blockId].focus();
-                this.$refs["editor-" + this.blockId].setSelectionRange(
+                this.$refs["editor-" + this.schemaId].focus();
+                this.$refs["editor-" + this.schemaId].setSelectionRange(
                     start,
                     end
                 );
             });
         },
         blurElement: function() {
-            this.$store.commit("unsetActiveBlock");
+            //this.$store.commit("unsetActiveBlock");
             this.isEdit = !this.isEdit;
         },
     },
@@ -185,5 +220,8 @@ export default {
 }
 .grayed {
     @apply text-gray-300;
+}
+.block-active {
+    @apply bg-gray-100;
 }
 </style>

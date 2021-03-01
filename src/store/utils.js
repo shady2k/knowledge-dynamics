@@ -11,24 +11,4 @@ export default {
             [8, 9, "a", "b"][~~(r * 3)]
         }${s.slice(15, 18)}-${s.slice(s.length - 12)}`;
     },
-
-    pushBySchemaId: function(state, schemaId, obj) {
-        function findAndPush(data, schemaId) {
-            let result = null;
-
-            data.some((e) => {
-              console.log(e);
-                if (e.schemaId == schemaId) {
-                  result = e;
-                  e.children.push(obj);
-                  return;
-                }
-                if (!result && e.children) {
-                  result = findAndPush(e.children, schemaId);
-                }
-            });
-        }
-
-        findAndPush(state.element.schema, schemaId);
-    },
 };

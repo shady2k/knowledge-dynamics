@@ -1,29 +1,21 @@
 export default {
     getElementTitle: state => {
-        return state.element.getElementTitle();
+        return state.element.title;
     },
 
-    getStructureLength: state => {
-        return state.element.getStructureLength();
+    getSchemaLength: state => {
+        return state.element.length;
     },
 
-    getStructure: state => {
-        return state.element.getStructure();
+    getSchema: state => {
+        return state.element.schema;
     },
-/*
-    getBlockData: state => blockId => {
-        let block = null;
-        block = state.element.blocks.find((item) => {
-            return item.id === blockId;
-        });
-        if (!block) {
-            return false;
-        } else {
-            return block;
+
+    getSchemaById: state => schemaId => {
+        if(!schemaId) {
+            return state.element.schema;
         }
-    },
 
-    getSchema: state => schemaId => {
         function find(data, id) {
             let result = null;
 
@@ -35,13 +27,32 @@ export default {
             return result;
         }
 
-        let block = null;
-        block = find(state.element.schema, schemaId);
+        let schema = null;
+        schema = find(state.element.schema, schemaId);
 
+        if (!schema) {
+            return false;
+        } else {
+            return schema;
+        }
+    },
+
+    getBlockById: state => blockId => {
+        console.log(blockId);
+        console.log(state.element.blocks);
+        let block = null;
+        block = state.element.blocks.find((item) => {
+            return item.blockId === blockId;
+        });
         if (!block) {
             return false;
         } else {
             return block;
         }
-    },*/
+    },
+
+    getBlockBySchemaId: state => schemaId => {
+        const schema = this.getters.getSchemaById(schemaId);
+        return this.getters.getBlockById(schema.blockId);
+    },
 };

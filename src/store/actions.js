@@ -1,24 +1,27 @@
 import utils from "./utils";
 
 export default {
-    addNewBlock(store, schemaCurrent) {
-        console.log(store);
-        store.element.addToTheEnd();        
-        
-        const schemaId = utils.generateUUID();
-        const blockId = utils.generateUUID();
-        store.commit("addBlock", {
-            block: {
-                id: blockId,
-            },
-        });
-        store.commit("addBlockToSchema", {
-            schemaId,
-            blockId,
-            schemaCurrent,
-        });
-        store.commit("setActiveBlock", schemaId);
-        return schemaId;
+    addNewBlock(store, obj) {
+        const schema = store.getters.getSchemaById(obj.schemaId);
+        if(schema.children && schema.children.length > 0) {
+            store.commit('addBySchemaId', {
+                schemaId: obj.schemaId,
+                block: obj.block,
+                type: 'unshift'
+            });
+        } else if(schema.parentId) {
+            store.commit('addBySchemaId', {
+                schemaId: schema.parentId,
+                block: obj.block,
+                type: 'push'
+            });
+        } else {
+            store.commit('addBySchemaId', {
+                schemaId: obj.schemaId,
+                block: obj.block,
+                type: 'splice'
+            });
+        }
     },
 
     getBlockData(store, blockId) {

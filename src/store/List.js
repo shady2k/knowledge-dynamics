@@ -26,11 +26,28 @@ export default class List {
     }
 
     getStructure() {
-        return this.schema;
+        const structure = this.schema.map((item) => {
+            const block = this.getBlock(item.blockId);
+            item.data = block.data;
+            item.blockId = block.id;
+            return item;
+        });
+        return structure;
     }
 
     getBlock(blockId) {
-        return new UIBlock();
+        return this.blocks.find((element) => {
+            if (element.id == blockId) return element;
+        });
+    }
+
+    changeBlock(blockId, obj) {
+        this.blocks.some((element) => {
+            if (element.id == blockId) {
+                element.data = obj.data;
+                return;
+            }
+        });
     }
 }
 
