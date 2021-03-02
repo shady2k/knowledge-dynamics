@@ -50,6 +50,24 @@ export default {
         return index;
     },
 
+    getLastChild: (state, getters) => obj => {
+        let result = null;
+        if(!obj) {
+            return result;
+        }
+
+        if(!result) {
+            if(obj.children && obj.children.length > 0) {
+                const childObj = obj.children[obj.children.length - 1];
+                result = getters.getLastChild(childObj);
+            } else {
+                result = obj;
+            }
+        }
+
+        return result;
+    },
+
     getNextSchemaId: (state, getters) => schemaId => {
         const schema = getters.getNextSchema(schemaId);
         if(schema) {
@@ -58,6 +76,46 @@ export default {
     },
 
     getNextSchema: (state, getters) => schemaId => {
+        function find(obj, schemaId) {
+            let result = null;
+            if(!obj) {
+                return;
+            }
+
+            if(!result) {
+                if(obj.parentId === null) {
+                    const root = state.element;
+                    const index = getters.getIndexInArrayBySchemaId({
+                        arr: root.children,
+                        needle: obj.schemaId
+                    });
+                    const tSchema = root.children[index + 1];
+                    const lastChild = getters.getLastChild(tSchema);
+                    result = lastChild;
+                    return result;
+                } else {
+                    const lastChild = getters.getLastChild(obj);
+                    if(lastChild.schemaId !== schemaId) {
+                        result = lastChild;
+                        return result;
+                    } else {
+                        const tSchema = getters.getSchemaById(obj.parentId);
+                        result = find(tSchema, schemaId);
+                    }
+                }
+            }
+
+            return result;
+        }
+        
+        const schema = getters.getSchemaById(schemaId);
+        const found = find(schema, schemaId);
+        console.log("found");
+        console.log(found);
+        return found;
+    },
+
+    getNextSchema_original: (state, getters) => schemaId => {
         if(!schemaId) {
             return null;
         }
@@ -121,16 +179,16 @@ export default {
             if(!obj) {
                 return result;
             }
-
+    
             if(!result) {
                 if(obj.children && obj.children.length > 0) {
                     const childObj = obj.children[obj.children.length - 1];
-                    result = getLastChild(childObj);
+                    result = getters.getLastChild(childObj);
                 } else {
                     result = obj;
                 }
             }
-
+    
             return result;
         }
 
