@@ -13,13 +13,14 @@ export default {
         block.blockId = blockIdNew;
         store.commit('addBlock', block);
 
+        let parent = null;
         if(schema.children && schema.children.length === 0) {
-            let parent = null;
             if(schema.parentId) {
                 parent = store.getters.getSchemaById(schema.parentId);
             } else {
                 parent = store.state.element;
             }
+
             const childrenCount = parent.children.length;
             const index = store.getters.getIndexInArrayBySchemaId({
                 arr: parent.children,
@@ -47,6 +48,8 @@ export default {
                 schema.children = [];
             }
             
+            parent = schema;
+
             store.commit('addSchema', {
                 arr: schema.children,
                 blockId: blockIdNew,

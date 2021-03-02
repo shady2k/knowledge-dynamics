@@ -23,7 +23,7 @@
                             ? data
                             : "Нажмите здесь, чтобы начать редактирование"
                     }} 
-                    <!-- | schemaId: {{this.schema.schemaId}} -->
+                    | schemaId: {{this.schema.schemaId}}
                 </span>
                 <textarea
                     v-if="isEdit"

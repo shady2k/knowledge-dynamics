@@ -58,6 +58,7 @@ export default {
     },
 
     getNextSchema: (state, getters) => schemaId => {
+        console.log(state.element);
         if(!schemaId) {
             return null;
         }
@@ -116,6 +117,7 @@ export default {
     },
 
     getPrevSchema: (state, getters) => schemaId => {
+        console.log(state.element);
         if(!schemaId) {
             return null;
         }
