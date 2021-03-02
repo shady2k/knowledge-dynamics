@@ -58,7 +58,6 @@ export default {
     },
 
     getNextSchema: (state, getters) => schemaId => {
-        console.log(state.element);
         if(!schemaId) {
             return null;
         }
@@ -117,7 +116,24 @@ export default {
     },
 
     getPrevSchema: (state, getters) => schemaId => {
-        console.log(state.element);
+        function getLastChild(obj) {
+            let result = null;
+            if(!obj) {
+                return result;
+            }
+
+            if(!result) {
+                if(obj.children && obj.children.length > 0) {
+                    const childObj = obj.children[obj.children.length - 1];
+                    result = getLastChild(childObj);
+                } else {
+                    result = obj;
+                }
+            }
+
+            return result;
+        }
+
         if(!schemaId) {
             return null;
         }
@@ -136,9 +152,7 @@ export default {
             } else {
                 const prevParent = parent.children[index - 1];
                 if(prevParent.children && prevParent.children.length > 0) {
-                    const childrenPrevParentCount = prevParent.children.length;
-                    const index = childrenPrevParentCount - 1;
-                    return prevParent.children[index];
+                    return getLastChild(prevParent);
                 } else {
                     return parent.children[index - 1];
                 }
@@ -156,9 +170,7 @@ export default {
             } else {
                 const prevParent = parent.children[index - 1];
                 if(prevParent.children && prevParent.children.length > 0) {
-                    const childrenPrevParentCount = prevParent.children.length;
-                    const index = childrenPrevParentCount - 1;
-                    return prevParent.children[index];
+                    return getLastChild(prevParent);
                 } else {
                     return parent.children[index - 1];
                 }

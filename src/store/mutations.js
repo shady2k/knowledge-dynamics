@@ -1,4 +1,5 @@
 import utils from "./utils";
+import { Schema } from "./class";
 
 export default {
     // addBlockToTheEnd(state, obj) {
@@ -73,13 +74,14 @@ export default {
     },
 
     identBlock: function(state, obj) {
-        const store = this;
-        const schema = obj.schema;
+        // const store = this;
+        let schema = obj.schema;
         const parent = obj.parent;
         const prev = obj.prev;
         const index = obj.index;
 
         parent.children.splice(index, 1);
+        schema.parentId = prev.schemaId;
         prev.children.push(schema);
     },
 
@@ -92,12 +94,12 @@ export default {
 
         const schemaIdNew = utils.generateUUID();
 
-        const schema = {
+        const schema = new Schema (state, {
             schemaId: schemaIdNew,
             blockId: blockId,
             parentId: parentId,
             children: [],
-        }
+        });
         
         if (type === "unshift") {
             arr.unshift(schema);
