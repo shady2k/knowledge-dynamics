@@ -23,7 +23,7 @@
                             ? data
                             : "Нажмите здесь, чтобы начать редактирование"
                     }} 
-                    | schemaId: {{this.schema.schemaId}}
+                    <!-- | schemaId: {{this.schema.schemaId}} -->
                 </span>
                 <textarea
                     v-if="isEdit"
@@ -135,6 +135,7 @@ export default {
     },
     methods: {
         keyHandlerEditor: function(e) {
+            // this.$log.debug(e);
             switch(e.code) {
                 case "Escape":
                     this.blur(e);
@@ -149,9 +150,23 @@ export default {
                         this.deleteBlock();
                     }
                     break;
-                case 'Tab':
+                case "Tab":
                     e.preventDefault();
                     this.$store.dispatch("identBlock", this.schema);
+                    break;
+                case "ArrowUp":
+                    e.preventDefault();
+                    this.$store.dispatch("setActiveBlock", {
+                        type: "prev",
+                        schemaId: this.schemaId
+                    });
+                    break;
+                case "ArrowDown":
+                    e.preventDefault();
+                    this.$store.dispatch("setActiveBlock", {
+                        type: "next",
+                        schemaId: this.schemaId
+                    });
                     break;
             }
         },

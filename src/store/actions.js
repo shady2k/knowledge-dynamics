@@ -65,5 +65,26 @@ export default {
             });
             return;
         }
+    },
+
+    setActiveBlock(store, obj) {
+        const type = obj.type || 'current';
+        let schemaId = null;
+
+        if(obj.type === "current") {
+            schemaId = obj.schemaId;
+        } else if(obj.type === "prev") {
+            const schema = store.getters.getPrevSchema(obj.schemaId);
+            if(schema) {
+                schemaId = schema.schemaId;
+            }
+        } else if(obj.type === "next") {
+            const schema = store.getters.getNextSchema(obj.schemaId);
+            if(schema) {
+                schemaId = schema.schemaId;
+            }
+        }
+        
+        store.commit('setActiveBlock', schemaId);
     }
 };
