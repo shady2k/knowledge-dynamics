@@ -23,7 +23,7 @@
                             ? data
                             : "Нажмите здесь, чтобы начать редактирование"
                     }} 
-                    <!-- | schemaId: {{this.schema.schemaId}} -->
+                    | schemaId: {{this.schema.schemaId}}
                 </span>
                 <textarea
                     v-if="isEdit"
@@ -148,6 +148,10 @@ export default {
                         e.preventDefault();
                         this.deleteBlock();
                     }
+                    break;
+                case 'Tab':
+                    e.preventDefault();
+                    this.$store.dispatch("identBlock", this.schema);
                     break;
             }
         },

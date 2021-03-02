@@ -31,12 +31,39 @@ export default {
 
     deleteBlock(store, obj) {
         const schema = obj;
-        const prevBlock = store.getters.getPrevSchemaId(schema.schemaId);
+        const prevBlock = store.getters.getPrevSchema(schema.schemaId);
         store.commit('deleteBlock', {
             schemaId: schema.schemaId
         });
         if(prevBlock) {
             store.commit('setActiveBlock', prevBlock);
+        }
+    },
+
+    identBlock(store, obj) {
+        const schema = obj;
+        const parent = store.getters.getSchemaById(schema.parentId);
+        if(!parent) return;
+        const prev = store.getters.getPrevSchema(schema.schemaId);
+        if(!prev) return;
+
+        const prevIndex = store.getters.getIndexInArrayBySchemaId({
+            arr: parent.children,
+            needle: prev.schemaId
+        });
+        const index = store.getters.getIndexInArrayBySchemaId({
+            arr: parent.children,
+            needle: schema.schemaId
+        });
+
+        if(prevIndex !== -1) {
+            store.commit('identBlock', {
+                schema,
+                parent,
+                prev,
+                index
+            });
+            return;
         }
     }
 };

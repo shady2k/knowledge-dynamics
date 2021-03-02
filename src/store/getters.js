@@ -51,13 +51,20 @@ export default {
     },
 
     getNextSchemaId: (state, getters) => schemaId => {
+        const schema = getters.getNextSchema(schemaId);
+        if(schema) {
+            return schema.schemaId;
+        }
+    },
+
+    getNextSchema: (state, getters) => schemaId => {
         if(!schemaId) {
             return null;
         }
         const schema = getters.getSchemaById(schemaId);
 
         if(schema.children && schema.children.length > 0) {
-            return schema.children[0].schemaId;
+            return schema.children[0];
         } else {
             if(schema.parentId) {
                 const parent = getters.getSchemaById(schema.parentId);
@@ -79,10 +86,10 @@ export default {
                     if(parentIndex === (childrenParentCount - 1)) {
                         return null;
                     } else {
-                        return parentParent.children[parentIndex + 1].schemaId;
+                        return parentParent.children[parentIndex + 1];
                     }
                 } else {
-                    return parent.children[index + 1].schemaId;
+                    return parent.children[index + 1];
                 }
             } else {
                 const parent = state.element;
@@ -95,13 +102,20 @@ export default {
                 if(index === (childrenCount - 1)) {
                     return null;
                 } else {
-                    return parent.children[index + 1].schemaId;
+                    return parent.children[index + 1];
                 }
             }
         }
     },
 
     getPrevSchemaId: (state, getters) => schemaId => {
+        const schema = getters.getPrevSchema(schemaId);
+        if(schema) {
+            return schema.schemaId;
+        }
+    },
+
+    getPrevSchema: (state, getters) => schemaId => {
         if(!schemaId) {
             return null;
         }
@@ -116,15 +130,15 @@ export default {
             });
 
             if(index === 0) {
-                return schema.parentId;
+                return parent;
             } else {
                 const prevParent = parent.children[index - 1];
                 if(prevParent.children && prevParent.children.length > 0) {
                     const childrenPrevParentCount = prevParent.children.length;
                     const index = childrenPrevParentCount - 1;
-                    return prevParent.children[index].schemaId;
+                    return prevParent.children[index];
                 } else {
-                    return parent.children[index - 1].schemaId;
+                    return parent.children[index - 1];
                 }
             }
 
@@ -142,9 +156,9 @@ export default {
                 if(prevParent.children && prevParent.children.length > 0) {
                     const childrenPrevParentCount = prevParent.children.length;
                     const index = childrenPrevParentCount - 1;
-                    return prevParent.children[index].schemaId;
+                    return prevParent.children[index];
                 } else {
-                    return parent.children[index - 1].schemaId;
+                    return parent.children[index - 1];
                 }
             }
         }

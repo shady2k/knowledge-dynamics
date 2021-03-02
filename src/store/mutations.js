@@ -66,6 +66,17 @@ export default {
         deleteSchemaById(state.element.children, schemaId);
     },
 
+    identBlock: function(state, obj) {
+        const store = this;
+        const schema = obj.schema;
+        const parent = obj.parent;
+        const prev = obj.prev;
+        const index = obj.index;
+
+        parent.children.splice(index, 1);
+        prev.children.push(schema);
+    },
+
     addBySchemaId: function(state, obj) {
         const schemaIdNew = utils.generateUUID();
         const blockIdNew = utils.generateUUID();
