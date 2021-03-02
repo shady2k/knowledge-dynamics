@@ -6,6 +6,7 @@ export const state = {
     element: {
         title: "test",
         length: 7,
+        schemaId: null,
         children: [
             {
                 schemaId : "0",

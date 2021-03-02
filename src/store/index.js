@@ -19,6 +19,7 @@ const loggerOptions = {
     return mutation.type !== "aBlocklistedMutation"
   },
   actionFilter (action /*, state*/) {
+    console.table(action);
     // same as `filter` but for actions
     // `action` is a `{ type, payload }`
     return action.type !== "aBlocklistedAction"

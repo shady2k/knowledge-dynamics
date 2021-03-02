@@ -185,7 +185,7 @@ export default {
         },
         addBlock: async function() {
             this.$store.dispatch("addBlock", { 
-                    schemaId: this.schemaId,
+                    schema: this.schema,
                     block: null
                 }
             );

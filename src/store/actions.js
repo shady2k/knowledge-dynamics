@@ -2,28 +2,81 @@ import utils from "./utils";
 
 export default {
     addBlock(store, obj) {
-        const schema = store.getters.getSchemaById(obj.schemaId);
-        if(schema.children && schema.children.length > 0) {
-            store.commit('addBySchemaId', {
-                schemaId: obj.schemaId,
-                block: obj.block,
-                type: 'unshift'
+        const schema = obj.schema;
+        const schemaId = schema.schemaId;
+        
+        let block = obj.block;
+        if(!block) {
+            block = {};
+        }
+        const blockIdNew = utils.generateUUID();
+        block.blockId = blockIdNew;
+        store.commit('addBlock', block);
+
+        if(schema.children && schema.children.length === 0) {
+            let parent = null;
+            if(schema.parentId) {
+                parent = store.getters.getSchemaById(schema.parentId);
+            } else {
+                parent = store.state.element;
+            }
+            const childrenCount = parent.children.length;
+            const index = store.getters.getIndexInArrayBySchemaId({
+                arr: parent.children,
+                needle: schemaId
             });
-        } else if(schema.parentId) {
-            store.commit('addBySchemaId', {
-                schemaId: schema.parentId,
-                block: obj.block,
-                type: 'push'
-            });
+
+            if(index === (childrenCount - 1)) {
+                store.commit('addSchema', {
+                    arr: parent.children,
+                    blockId: blockIdNew,
+                    parentId: parent.schemaId,
+                    type: 'push'
+                });
+            } else {
+                store.commit('addSchema', {
+                    arr: parent.children,
+                    blockId: blockIdNew,
+                    parentId: parent.schemaId,
+                    type: 'splice',
+                    index: index + 1
+                });
+            }
         } else {
-            store.commit('addBySchemaId', {
-                schemaId: obj.schemaId,
-                block: obj.block,
-                type: 'splice'
-            });
+            if(!schema.children) {
+                schema.children = [];
+            }
+            
+            store.commit('addSchema', {
+                arr: schema.children,
+                blockId: blockIdNew,
+                parentId: parent.schemaId,
+                type: 'unshift'
+            });            
+
         }
 
-        const nextBlock = store.getters.getNextSchemaId(obj.schemaId);
+        // if(schema.children && schema.children.length > 0) {
+        //     store.commit('addBySchemaId', {
+        //         schemaId: obj.schemaId,
+        //         block: obj.block,
+        //         type: 'unshift'
+        //     });
+        // } else if(schema.parentId) {
+        //     store.commit('addBySchemaId', {
+        //         schemaId: schema.parentId,
+        //         block: obj.block,
+        //         type: 'push'
+        //     });
+        // } else {
+        //     store.commit('addBySchemaId', {
+        //         schemaId: obj.schemaId,
+        //         block: obj.block,
+        //         type: 'splice'
+        //     });
+        // }
+
+        const nextBlock = store.getters.getNextSchemaId(schema.schemaId);
         if(nextBlock) {
             store.commit('setActiveBlock', nextBlock);
         }

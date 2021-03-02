@@ -1,23 +1,23 @@
 import utils from "./utils";
 
 export default {
-    addBlockToTheEnd(state, obj) {
-        const schemaId = utils.generateUUID();
-        const blockId = utils.generateUUID();
-        const block = {
-            blockId,
-            data: obj.data,
-        };
-        this.commit('addBlock', block);
+    // addBlockToTheEnd(state, obj) {
+    //     const schemaId = utils.generateUUID();
+    //     const blockId = utils.generateUUID();
+    //     const block = {
+    //         blockId,
+    //         data: obj.data,
+    //     };
+    //     this.commit('addBlock', block);
 
-        state.element.children.push({
-            schemaId,
-            blockId,
-            parentId: null,
-            children: [],
-        });
-        state.element.length++;
-    },
+    //     state.element.children.push({
+    //         schemaId,
+    //         blockId,
+    //         parentId: null,
+    //         children: [],
+    //     });
+    //     state.element.length++;
+    // },
 
     changeBlock(state, obj) {
         state.element.blocks.some((element) => {
@@ -31,6 +31,12 @@ export default {
     },
 
     addBlock(state, block) {
+        const blockTemplate = {
+            blockId: utils.generateUUID(),
+            title: '',
+            data: ''
+        }
+        block = Object.assign(blockTemplate, block);
         state.element.blocks.push(block);
     },
 
@@ -77,59 +83,86 @@ export default {
         prev.children.push(schema);
     },
 
-    addBySchemaId: function(state, obj) {
-        const schemaIdNew = utils.generateUUID();
-        const blockIdNew = utils.generateUUID();
-        const type = obj.type;
-        const schemaId = obj.schemaId;
-        const block = obj.block || {
-            blockId: blockIdNew,
-            data: "",
-        };
-        this.commit('addBlock', block);
+    addSchema: function(state, obj) {
+        const arr = obj.arr;
+        const blockId = obj.blockId;
+        const parentId = obj.parentId;
+        const type = obj.type || "push";
+        const index = obj.index || null;
 
-        let schema = {
+        const schemaIdNew = utils.generateUUID();
+
+        const schema = {
             schemaId: schemaIdNew,
-            blockId: blockIdNew,
-            parentId: null,
+            blockId: blockId,
+            parentId: parentId,
             children: [],
         }
+        
+        if (type === "unshift") {
+            arr.unshift(schema);
 
-        function findAndPush(data, schemaId, type) {
-            let result = null;
+        } else if(type === "push") {
+            arr.push(schema);
 
-            data.some((e, index) => {
-                if (e.schemaId == schemaId) {
-                    result = e;
-                    if (!e.children) e.children = [];
-                    
-                    if (type === "unshift") {
-                        schema.parentId = e.schemaId;
-                        e.children.unshift(schema);
-
-                    } else if(type === "push") {
-                        schema.parentId = e.schemaId;
-                        e.children.push(schema);
-
-                    } else if(type === "splice") {
-                        if(!e.parentId) {
-                            state.element.children.splice(index + 1, 0, schema);
-                        } else {
-                            schema.parentId = e.parentId;
-                            e.splice(index + 1, 0, schema);
-                        }
-                    }
-
-                    return;
-                }
-                if (!result && e.children) {
-                    result = findAndPush(e.children, schemaId, type);
-                }
-            });
+        } else if(type === "splice") {
+            arr.splice(index, 0, schema);
         }
-
-        findAndPush(state.element.children, schemaId, type);
     },
+
+    // addBySchemaId: function(state, obj) {
+    //     const schemaIdNew = utils.generateUUID();
+    //     const blockIdNew = utils.generateUUID();
+    //     const type = obj.type;
+    //     const schemaId = obj.schemaId;
+    //     const block = obj.block || {
+    //         blockId: blockIdNew,
+    //         data: "",
+    //     };
+    //     this.commit('addBlock', block);
+
+    //     let schema = {
+    //         schemaId: schemaIdNew,
+    //         blockId: blockIdNew,
+    //         parentId: null,
+    //         children: [],
+    //     }
+
+    //     function findAndPush(data, schemaId, type) {
+    //         let result = null;
+
+    //         data.some((e, index) => {
+    //             if (e.schemaId == schemaId) {
+    //                 result = e;
+    //                 if (!e.children) e.children = [];
+                    
+    //                 if (type === "unshift") {
+    //                     schema.parentId = e.schemaId;
+    //                     e.children.unshift(schema);
+
+    //                 } else if(type === "push") {
+    //                     schema.parentId = e.schemaId;
+    //                     e.children.push(schema);
+
+    //                 } else if(type === "splice") {
+    //                     if(!e.parentId) {
+    //                         state.element.children.splice(index + 1, 0, schema);
+    //                     } else {
+    //                         schema.parentId = e.parentId;
+    //                         e.splice(index + 1, 0, schema);
+    //                     }
+    //                 }
+
+    //                 return;
+    //             }
+    //             if (!result && e.children) {
+    //                 result = findAndPush(e.children, schemaId, type);
+    //             }
+    //         });
+    //     }
+
+    //     findAndPush(state.element.children, schemaId, type);
+    // },
 
     //addBlock(state) {
     /*let block = {};
