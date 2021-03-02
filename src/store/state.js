@@ -5,8 +5,8 @@ export const state = {
     },
     element: {
         title: "test",
-        length: 6,
-        schema: [
+        length: 7,
+        children: [
             {
                 schemaId : "0",
                 blockId: "0",
@@ -27,6 +27,13 @@ export const state = {
                                 schemaId : "3",
                                 blockId: "1",
                                 parentId: "2",
+                                children: [],
+                            },
+                            { 
+                                schemaId : "7",
+                                blockId: "7",
+                                parentId: "2",
+                                children: [],
                             },
                         ]
                     },
@@ -34,6 +41,7 @@ export const state = {
                         schemaId : "4",
                         blockId: "3",
                         parentId: "1",
+                        children: [],
                     },
                 ]
             },
@@ -41,6 +49,13 @@ export const state = {
                 schemaId : "5",
                 blockId: "4",
                 parentId: null,
+                children: [],
+            },
+            { 
+                schemaId : "6",
+                blockId: "6",
+                parentId: null,
+                children: [],
             },
         ],
         blocks: [
@@ -67,6 +82,14 @@ export const state = {
             {
                 blockId: "5",
                 data: "test5"
+            },
+            {
+                blockId: "6",
+                data: "test6"
+            },
+            {
+                blockId: "7",
+                data: "test7"
             }
         ],
     },

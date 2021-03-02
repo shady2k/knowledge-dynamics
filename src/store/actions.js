@@ -24,13 +24,15 @@ export default {
         }
     },
 
-    getBlockData(store, blockId) {
-        return store.getters.getBlockData(blockId);
-    },
-
-    getSchemaById(store, schemaId) {
-        return store.element.getSchemaById(schemaId);
-    },
-
-    focusBlock(store, blockId) {},
+    deleteBlock(store, obj) {
+        const schema = obj;
+        store.commit('deleteBlock', {
+            schemaId: schema.schemaId
+        });
+        if(schema.parentId) {
+            store.commit('setActiveBlock', schema.parentId);
+        } else {
+            store.commit('setActiveBlock', schema.parentId);
+        }
+    }
 };

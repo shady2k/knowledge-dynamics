@@ -10,7 +10,7 @@ export default {
         };
         this.commit('addBlock', block);
 
-        state.element.schema.push({
+        state.element.children.push({
             schemaId,
             blockId,
             parentId: null,
@@ -32,6 +32,38 @@ export default {
 
     addBlock(state, block) {
         state.element.blocks.push(block);
+    },
+
+    deleteBlock(state, obj) {
+        const store = this;
+        const schemaId = obj.schemaId;
+
+        function deleteSchemaById(data, schemaId, type) {
+            let result = null;
+
+            data.some((e, index) => {
+                if (e.schemaId == schemaId) {
+                    result = e;
+                    if (!e.children) e.children = [];
+                    
+                    if(e.children.length === 0) {
+                        if(e.parentId) {
+                            const parent = store.getters.getSchemaById(e.parentId);
+                            parent.children.splice(index, 1);
+                        } else {
+                            state.element.children.splice(index, 1);
+                        }
+                    }
+
+                    return;
+                }
+                if (!result && e.children) {
+                    result = deleteSchemaById(e.children, schemaId, type);
+                }
+            });
+        }
+
+        deleteSchemaById(state.element.children, schemaId);
     },
 
     addBySchemaId: function(state, obj) {
@@ -70,7 +102,7 @@ export default {
 
                     } else if(type === "splice") {
                         if(!e.parentId) {
-                            state.element.schema.splice(index + 1, 0, schema);
+                            state.element.children.splice(index + 1, 0, schema);
                         } else {
                             schema.parentId = e.parentId;
                             e.splice(index + 1, 0, schema);
@@ -85,7 +117,7 @@ export default {
             });
         }
 
-        findAndPush(state.element.schema, schemaId, type);
+        findAndPush(state.element.children, schemaId, type);
         this.commit("setActiveBlock", schemaIdNew);
     },
 
@@ -118,8 +150,8 @@ export default {
     //     });
     //     block.data = obj.data;
     // },
-    setActiveBlock(state, schema) {
-        state.editor.activeBlock = schema;
+    setActiveBlock(state, schemaId) {
+        state.editor.activeBlock = schemaId;
     },
 
     unsetActiveBlock(state) {

@@ -22,7 +22,7 @@
                         data
                             ? data
                             : "Нажмите здесь, чтобы начать редактирование"
-                    }}
+                    }} | schemaId: {{this.schema.schemaId}}
                 </span>
                 <textarea
                     v-if="isEdit"
@@ -32,8 +32,7 @@
                     rows="1"
                     :ref="'editor-' + schemaId"
                     role="textbox"
-                    @keydown.esc="blur"
-                    @keydown.enter="addNewBlock"
+                    @keydown="keyHandlerEditor"
                     v-autogrow
                     :class="{ 'block-active': isEdit }"
                     class="break-words overflow-hidden bg-transparent resize-none outline-none w-full bg-white"
@@ -62,10 +61,9 @@ export default {
         blockId: String
     },
     mounted() {
-        this.$log.debug(this.$store.state);
-        if (this.$store.state.editor.activeBlock === this.schemaId) {
-            this.focusBlock(this.schemaId);
-        }
+        // if (this.activeBlock === this.schemaId) {
+        //     this.focusBlock();
+        // }
     },
     asyncComputed: {
         /*block: {
@@ -88,6 +86,18 @@ export default {
             },
             default: {},
         },*/
+    },
+    watch: {
+        activeBlock: function(activeBlock) {
+            if (activeBlock === this.schemaId) {
+                this.focusBlock();
+            }
+        },
+        isEdit: function(val) {
+            if(val) {
+                this.$log.debug(this.$store.getters.getNextSchema(this.schemaId));
+            }
+        }
     },
     computed: {
         block: {
@@ -117,31 +127,10 @@ export default {
         },
         children: function() {
             return this.block.children;
-        }
-        /*data: {
-            get: function() {
-                let block = this.block;
-                if (!block) {
-                    block = {
-                        data: "",
-                    };
-                }
-                return block.data;
-            },
-            set: function(data) {
-                this.$store.commit("changeBlock", { blockId: this.schema.blockId, data });
-            },
         },
-        children: {
-            get: function() {
-                let schema = this.schema;
-                if (schema) {
-                    return schema.children;
-                } else {
-                    return null;
-                }
-            },
-        },*/
+        activeBlock: function() {
+            return this.$store.state.editor.activeBlock;
+        }
     },
     data() {
         return {
@@ -149,15 +138,37 @@ export default {
         };
     },
     methods: {
-        focusBlock: function(shcemaId) {
+        keyHandlerEditor: function(e) {
+            switch(e.code) {
+                case "Escape":
+                    this.blur(e);
+                    break;
+                case "Enter":
+                    e.preventDefault();
+                    this.addNewBlock();
+                    break;
+                case "Backspace":
+                    if(this.isEdit && this.data == "") {
+                        e.preventDefault();
+                        this.deleteBlock();
+                    }
+                    break;
+            }
+        },
+        deleteBlock: function() {
+            this.$store.dispatch("deleteBlock", this.schema);
+        },
+        focusBlock: function() {
+            const schemaId = this.schemaId;
+            const range = this.data.length;
+
             this.isEdit = true;
             this.$nextTick(() => {
-                this.$refs["editor-" + shcemaId].focus();
-                this.$refs["editor-" + shcemaId].setSelectionRange(0, 0);
+                this.$refs["editor-" + schemaId].focus();
+                this.$refs["editor-" + schemaId].setSelectionRange(range, range);
             });
         },
-        addNewBlock: async function(e) {
-            e.preventDefault();
+        addNewBlock: async function() {
             this.$store.dispatch("addNewBlock", { 
                     schemaId: this.schemaId,
                     block: null
