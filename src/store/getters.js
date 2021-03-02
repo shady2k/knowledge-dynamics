@@ -50,7 +50,7 @@ export default {
         return index;
     },
 
-    getNextSchema: (state, getters) => schemaId => {
+    getNextSchemaId: (state, getters) => schemaId => {
         if(!schemaId) {
             return null;
         }
@@ -101,8 +101,99 @@ export default {
         }
     },
 
-    getPrevSchema: state => schemaId => {
+    getPrevSchemaId: (state, getters) => schemaId => {
+        if(!schemaId) {
+            return null;
+        }
+        const schema = getters.getSchemaById(schemaId);
 
+        if(schema.parentId) {
+            const parent = getters.getSchemaById(schema.parentId);
+
+            const index = getters.getIndexInArrayBySchemaId({
+                arr: parent.children,
+                needle: schemaId
+            });
+
+            if(index === 0) {
+                return schema.parentId;
+            } else {
+                const prevParent = parent.children[index - 1];
+                if(prevParent.children && prevParent.children.length > 0) {
+                    const childrenPrevParentCount = prevParent.children.length;
+                    const index = childrenPrevParentCount - 1;
+                    return prevParent.children[index].schemaId;
+                } else {
+                    return parent.children[index - 1].schemaId;
+                }
+            }
+
+        } else {
+            const parent = state.element;
+            const index = getters.getIndexInArrayBySchemaId({
+                arr: parent.children,
+                needle: schemaId
+            });
+
+            if(index === 0) {
+                return null;
+            } else {
+                const prevParent = parent.children[index - 1];
+                if(prevParent.children && prevParent.children.length > 0) {
+                    const childrenPrevParentCount = prevParent.children.length;
+                    const index = childrenPrevParentCount - 1;
+                    return prevParent.children[index].schemaId;
+                } else {
+                    return parent.children[index - 1].schemaId;
+                }
+            }
+        }
+
+        /*
+        if(schema.children && schema.children.length > 0) {
+            return schema.children[0].schemaId;
+        } else {
+            if(schema.parentId) {
+                const parent = getters.getSchemaById(schema.parentId);
+                const childrenCount = parent.children.length;
+
+                const index = getters.getIndexInArrayBySchemaId({
+                    arr: parent.children,
+                    needle: schemaId
+                });
+
+                if(index === (childrenCount - 1)) {
+                    const parentParent = getters.getSchemaById(parent.parentId);
+                    const childrenParentCount = parentParent.children.length;
+                    const parentIndex = getters.getIndexInArrayBySchemaId({
+                        arr: parentParent.children,
+                        needle: schema.parentId
+                    });
+
+                    if(parentIndex === (childrenParentCount - 1)) {
+                        return null;
+                    } else {
+                        return parentParent.children[parentIndex + 1].schemaId;
+                    }
+                } else {
+                    return parent.children[index + 1].schemaId;
+                }
+            } else {
+                const parent = state.element;
+                const childrenCount = parent.children.length;
+                const index = getters.getIndexInArrayBySchemaId({
+                    arr: parent.children,
+                    needle: schemaId
+                });
+
+                if(index === (childrenCount - 1)) {
+                    return null;
+                } else {
+                    return parent.children[index + 1].schemaId;
+                }
+            }
+        }
+        */
     },
 
     getBlockById: state => blockId => {

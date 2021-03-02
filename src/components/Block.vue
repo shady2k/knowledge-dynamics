@@ -22,7 +22,8 @@
                         data
                             ? data
                             : "Нажмите здесь, чтобы начать редактирование"
-                    }} | schemaId: {{this.schema.schemaId}}
+                    }} 
+                    <!-- | schemaId: {{this.schema.schemaId}} -->
                 </span>
                 <textarea
                     v-if="isEdit"
@@ -93,11 +94,6 @@ export default {
                 this.focusBlock();
             }
         },
-        isEdit: function(val) {
-            if(val) {
-                this.$log.debug(this.$store.getters.getNextSchema(this.schemaId));
-            }
-        }
     },
     computed: {
         block: {
