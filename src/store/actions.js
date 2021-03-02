@@ -1,7 +1,7 @@
 import utils from "./utils";
 
 export default {
-    addNewBlock(store, obj) {
+    addBlock(store, obj) {
         const schema = store.getters.getSchemaById(obj.schemaId);
         if(schema.children && schema.children.length > 0) {
             store.commit('addBySchemaId', {

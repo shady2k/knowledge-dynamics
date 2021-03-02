@@ -142,7 +142,7 @@ export default {
                     break;
                 case "Enter":
                     e.preventDefault();
-                    this.addNewBlock();
+                    this.addBlock();
                     break;
                 case "Backspace":
                     if(this.isEdit && this.data == "") {
@@ -183,8 +183,8 @@ export default {
                 this.$refs["editor-" + schemaId].setSelectionRange(range, range);
             });
         },
-        addNewBlock: async function() {
-            this.$store.dispatch("addNewBlock", { 
+        addBlock: async function() {
+            this.$store.dispatch("addBlock", { 
                     schemaId: this.schemaId,
                     block: null
                 }
