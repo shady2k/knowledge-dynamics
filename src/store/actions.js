@@ -22,17 +22,21 @@ export default {
                 type: 'splice'
             });
         }
+
+        const nextBlock = store.getters.getNextSchemaId(obj.schemaId);
+        if(nextBlock) {
+            store.commit('setActiveBlock', nextBlock);
+        }
     },
 
     deleteBlock(store, obj) {
         const schema = obj;
+        const prevBlock = store.getters.getPrevSchemaId(schema.schemaId);
         store.commit('deleteBlock', {
             schemaId: schema.schemaId
         });
-        if(schema.parentId) {
-            store.commit('setActiveBlock', schema.parentId);
-        } else {
-            store.commit('setActiveBlock', schema.parentId);
+        if(prevBlock) {
+            store.commit('setActiveBlock', prevBlock);
         }
     }
 };

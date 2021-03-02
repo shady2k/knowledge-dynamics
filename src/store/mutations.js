@@ -118,7 +118,6 @@ export default {
         }
 
         findAndPush(state.element.children, schemaId, type);
-        this.commit("setActiveBlock", schemaIdNew);
     },
 
     //addBlock(state) {

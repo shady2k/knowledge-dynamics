@@ -40,7 +40,7 @@
                 >
                 </textarea>
             </div>
-            <div :id="'component-children-'+schemaId" class="flex flex-col">
+            <div :id="'component-children-'+schemaId" class="flex flex-col ml-1">
                 <section v-for="item in schema.children" :key="'block-' + item.schemaId">
                     <Block :schemaId="item.schemaId" :blockId="item.blockId" />
                 </section>
@@ -62,9 +62,9 @@ export default {
         blockId: String
     },
     mounted() {
-        // if (this.activeBlock === this.schemaId) {
-        //     this.focusBlock();
-        // }
+        if (this.activeBlock === this.schemaId) {
+            this.focusBlock();
+        }
     },
     asyncComputed: {
         /*block: {
@@ -195,7 +195,7 @@ export default {
             let start = end - selectionLength;
 
             this.isEdit = !this.isEdit;
-            this.$store.commit("setActiveBlock", this.schema);
+            this.$store.commit("setActiveBlock", this.schema.schemaId);
             this.$nextTick(() => {
                 this.$refs["editor-" + this.schemaId].focus();
                 this.$refs["editor-" + this.schemaId].setSelectionRange(
@@ -229,6 +229,6 @@ export default {
     @apply text-gray-300;
 }
 .block-active {
-    @apply bg-gray-100;
+    @apply bg-blue-50;
 }
 </style>
