@@ -2,7 +2,6 @@ import Vue from "vue";
 import App from "./App.vue";
 import store from './store';
 import VueLogger from "vuejs-logger";
-import AsyncComputed from 'vue-async-computed';
 import VueTextareaAutogrowDirective from "vue-textarea-autogrow-directive";
 import "./assets/css/tailwind.css";
 
