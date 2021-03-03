@@ -135,7 +135,7 @@ export default {
     },
     methods: {
         keyHandlerEditor: function(e) {
-            // this.$log.debug(e);
+            //this.$log.debug(e);
             switch(e.code) {
                 case "Escape":
                     this.blur(e);
@@ -151,8 +151,13 @@ export default {
                     }
                     break;
                 case "Tab":
-                    e.preventDefault();
-                    this.$store.dispatch("identBlock", this.schema);
+                    if(e.shiftKey) {
+                        e.preventDefault();
+                        this.$store.dispatch("unIdentBlock", this.schema);
+                    } else {
+                        e.preventDefault();
+                        this.$store.dispatch("identBlock", this.schema);
+                    }
                     break;
                 case "ArrowUp":
                     e.preventDefault();

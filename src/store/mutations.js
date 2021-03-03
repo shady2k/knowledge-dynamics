@@ -85,6 +85,19 @@ export default {
         target.children.push(schema);
     },
 
+    unIdentBlock: function(state, obj) {
+        // const store = this;
+        let schema = obj.schema;
+        const parent = obj.parent;
+        const target = obj.target;
+        const index = obj.index;
+        const targetIndex = obj.targetIndex;
+
+        parent.children.splice(index, 1);
+        schema.parentId = target.schemaId;
+        target.children.splice(targetIndex, 0, schema);
+    },
+
     addSchema: function(state, obj) {
         const arr = obj.arr;
         const blockId = obj.blockId;

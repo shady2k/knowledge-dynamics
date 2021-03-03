@@ -59,26 +59,6 @@ export default {
 
         }
 
-        // if(schema.children && schema.children.length > 0) {
-        //     store.commit('addBySchemaId', {
-        //         schemaId: obj.schemaId,
-        //         block: obj.block,
-        //         type: 'unshift'
-        //     });
-        // } else if(schema.parentId) {
-        //     store.commit('addBySchemaId', {
-        //         schemaId: schema.parentId,
-        //         block: obj.block,
-        //         type: 'push'
-        //     });
-        // } else {
-        //     store.commit('addBySchemaId', {
-        //         schemaId: obj.schemaId,
-        //         block: obj.block,
-        //         type: 'splice'
-        //     });
-        // }
-
         const nextBlock = store.getters.getNextSchemaId(schema.schemaId);
         if(nextBlock) {
             store.commit('setActiveBlock', nextBlock);
@@ -125,6 +105,71 @@ export default {
             target,
             index
         });
+    },
+
+    unIdentBlock(store, obj) {
+        const schema = obj;
+        
+        let target = null;
+        let targetIndex = null;
+        let parent = null;
+
+        if(schema.parentId) {
+            parent = store.getters.getSchemaById(schema.parentId);
+        } else {
+            return;
+        }
+
+        if(!parent) return;
+
+        if(parent.parentId) {
+            const parentParent = store.getters.getSchemaById(parent.parentId);
+            if(!parentParent) return;
+            target = parentParent;
+        } else {
+            target = store.state.element;
+        }
+
+        if(!target) return;
+
+        const nextBlock = store.getters.getNextSchema(schema.schemaId);
+        if(nextBlock) {
+            if(target.schemaId === nextBlock.parentId) {
+                const nextBlockIndex = store.getters.getIndexInArrayBySchemaId({
+                    arr: target.children,
+                    needle: nextBlock.schemaId
+                });
+                if(nextBlockIndex !== -1) {
+                    targetIndex = nextBlockIndex;
+                } else {
+                    return;
+                }
+            } else {
+                const parentBlockIndex = store.getters.getIndexInArrayBySchemaId({
+                    arr: target.children,
+                    needle: parent.schemaId
+                });
+                targetIndex = parentBlockIndex + 1;
+            }
+        }
+
+        if(!targetIndex) return;
+
+        const index = store.getters.getIndexInArrayBySchemaId({
+            arr: parent.children,
+            needle: schema.schemaId
+        });
+
+        if(index === -1) return;
+        
+        store.commit('unIdentBlock', {
+            schema,
+            parent,
+            target,
+            index,
+            targetIndex
+        });
+
     },
 
     setActiveBlock(store, obj) {
