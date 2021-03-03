@@ -142,7 +142,9 @@ export default {
                     break;
                 case "Enter":
                     e.preventDefault();
-                    this.addBlock();
+                    if(this.data !== "") {
+                        this.addBlock();
+                    }
                     break;
                 case "Backspace":
                     if(this.isEdit && this.data == "") {
