@@ -98,29 +98,33 @@ export default {
 
     identBlock(store, obj) {
         const schema = obj;
-        const parent = store.getters.getSchemaById(schema.parentId);
-        if(!parent) return;
-        const prev = store.getters.getPrevSchema(schema.schemaId);
+        
+        const prev = store.getters.getPrevIndexSchema(schema);
         if(!prev) return;
 
-        const prevIndex = store.getters.getIndexInArrayBySchemaId({
-            arr: parent.children,
-            needle: prev.schemaId
-        });
+        const target = prev;
+        if(!target) return;
+
+        let parent = null;
+        if(schema.parentId) {
+            parent = store.getters.getSchemaById(schema.parentId);
+        } else {
+            parent = store.state.element;
+        }
+
         const index = store.getters.getIndexInArrayBySchemaId({
             arr: parent.children,
             needle: schema.schemaId
         });
 
-        if(prevIndex !== -1) {
-            store.commit('identBlock', {
-                schema,
-                parent,
-                prev,
-                index
-            });
-            return;
-        }
+        if(index === -1) return;
+
+        store.commit('identBlock', {
+            schema,
+            parent,
+            target,
+            index
+        });
     },
 
     setActiveBlock(store, obj) {

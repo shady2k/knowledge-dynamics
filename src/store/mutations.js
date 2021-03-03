@@ -77,12 +77,12 @@ export default {
         // const store = this;
         let schema = obj.schema;
         const parent = obj.parent;
-        const prev = obj.prev;
+        const target = obj.target;
         const index = obj.index;
 
         parent.children.splice(index, 1);
-        schema.parentId = prev.schemaId;
-        prev.children.push(schema);
+        schema.parentId = target.schemaId;
+        target.children.push(schema);
     },
 
     addSchema: function(state, obj) {

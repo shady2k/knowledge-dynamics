@@ -11,29 +11,18 @@ export default {
         return state.element.children;
     },
 
-    getSchemaById: state => schemaId => {
+    getSchemaById: (state, getters) => schemaId => {
         if(!schemaId) {
-            return state.element;
+            return null;
         }
 
-        function find(data, id) {
-            let result = null;
+        const flat = getters.traversedTree;
 
-            data.some((e) => {
-                if (e.schemaId == id) return (result = e);
-                if (!result && e.children) result = find(e.children, id);
-            });
-
-            return result;
-        }
-
-        let schema = null;
-        schema = find(state.element.children, schemaId);
-
-        if (!schema) {
-            return false;
+        const index = flat.flatMap.get(schemaId);
+        if(index !== -1) {
+            return flat.flatArr[index];
         } else {
-            return schema;
+            return null;
         }
     },
 
@@ -68,7 +57,7 @@ export default {
         return result;
     },
 
-    traverseTree: () => obj => {
+    traversedTree: (state) => {
         function traverse(flatMap, flatArr, obj) {
             if(obj.children && obj.children.length > 0) {
                 obj.children.forEach((element) => {
@@ -81,7 +70,7 @@ export default {
 
         let flatMap = new Map();
         let flatArr = [];
-        traverse(flatMap, flatArr, obj);
+        traverse(flatMap, flatArr, state.element);
         return { flatMap, flatArr };
     },
 
@@ -93,13 +82,37 @@ export default {
     },
 
     getNextSchema: (state, getters) => schemaId => {
-        const flat = getters.traverseTree(state.element);
+        const flat = getters.traversedTree;
 
         const index = flat.flatMap.get(schemaId);
         if(index === (flat.flatArr.length - 1)) {
             return null;
         } else {
             return flat.flatArr[index + 1];
+        }
+    },
+    
+    getNextIndexSchema: (state, getters) => schema => {
+        if(!schema) return;
+        let parent = null;
+        if(schema.parentId) {
+            parent = getters.getSchemaById(schema.parentId);
+        } else {
+            parent = state.element;
+        }
+        const index = getters.getIndexInArrayBySchemaId({
+            arr: parent.children,
+            needle: schema.schemaId
+        });
+        
+        if(index !== -1) {
+            if(index !== parent.children.length - 1) {
+                return parent.children[index + 1];
+            } else {
+                return null;
+            }
+        } else {
+            return null;
         }
     },
 
@@ -110,8 +123,32 @@ export default {
         }
     },
 
+    getPrevIndexSchema: (state, getters) => schema => {
+        if(!schema) return;
+        let parent = null;
+        if(schema.parentId) {
+            parent = getters.getSchemaById(schema.parentId);
+        } else {
+            parent = state.element;
+        }
+        const index = getters.getIndexInArrayBySchemaId({
+            arr: parent.children,
+            needle: schema.schemaId
+        });
+        
+        if(index !== -1) {
+            if(index !== 0) {
+                return parent.children[index - 1];
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    },
+
     getPrevSchema: (state, getters) => schemaId => {
-        const flat = getters.traverseTree(state.element);
+        const flat = getters.traversedTree;
 
         const index = flat.flatMap.get(schemaId);
         if(index === 0) {
