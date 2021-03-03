@@ -37,7 +37,7 @@ export default {
         }
     },
 
-    getIndexInArrayBySchemaId: state => obj => {
+    getIndexInArrayBySchemaId: () => obj => {
         const arr = obj.arr;
         const needle = obj.needle;
         let index = -1;
@@ -68,6 +68,23 @@ export default {
         return result;
     },
 
+    traverseTree: () => obj => {
+        function traverse(flatMap, flatArr, obj) {
+            if(obj.children && obj.children.length > 0) {
+                obj.children.forEach((element) => {
+                    const index = flatArr.push(element) - 1;
+                    flatMap.set(element.schemaId, index);
+                    traverse(flatMap, flatArr, element);
+                });
+            }
+        }
+
+        let flatMap = new Map();
+        let flatArr = [];
+        traverse(flatMap, flatArr, obj);
+        return { flatMap, flatArr };
+    },
+
     getNextSchemaId: (state, getters) => schemaId => {
         const schema = getters.getNextSchema(schemaId);
         if(schema) {
@@ -76,93 +93,13 @@ export default {
     },
 
     getNextSchema: (state, getters) => schemaId => {
-        function find(obj, schemaId) {
-            let result = null;
-            if(!obj) {
-                return;
-            }
+        const flat = getters.traverseTree(state.element);
 
-            if(!result) {
-                if(obj.parentId === null) {
-                    const root = state.element;
-                    const index = getters.getIndexInArrayBySchemaId({
-                        arr: root.children,
-                        needle: obj.schemaId
-                    });
-                    const tSchema = root.children[index + 1];
-                    const lastChild = getters.getLastChild(tSchema);
-                    result = lastChild;
-                    return result;
-                } else {
-                    const lastChild = getters.getLastChild(obj);
-                    if(lastChild.schemaId !== schemaId) {
-                        result = lastChild;
-                        return result;
-                    } else {
-                        const tSchema = getters.getSchemaById(obj.parentId);
-                        result = find(tSchema, schemaId);
-                    }
-                }
-            }
-
-            return result;
-        }
-        
-        const schema = getters.getSchemaById(schemaId);
-        const found = find(schema, schemaId);
-        console.log("found");
-        console.log(found);
-        return found;
-    },
-
-    getNextSchema_original: (state, getters) => schemaId => {
-        if(!schemaId) {
+        const index = flat.flatMap.get(schemaId);
+        if(index === (flat.flatArr.length - 1)) {
             return null;
-        }
-        const schema = getters.getSchemaById(schemaId);
-
-        if(schema.children && schema.children.length > 0) {
-            return schema.children[0];
         } else {
-            if(schema.parentId) {
-                const parent = getters.getSchemaById(schema.parentId);
-                const childrenCount = parent.children.length;
-
-                const index = getters.getIndexInArrayBySchemaId({
-                    arr: parent.children,
-                    needle: schemaId
-                });
-
-                if(index === (childrenCount - 1)) {
-                    const parentParent = getters.getSchemaById(parent.parentId);
-                    const childrenParentCount = parentParent.children.length;
-                    const parentIndex = getters.getIndexInArrayBySchemaId({
-                        arr: parentParent.children,
-                        needle: schema.parentId
-                    });
-
-                    if(parentIndex === (childrenParentCount - 1)) {
-                        return null;
-                    } else {
-                        return parentParent.children[parentIndex + 1];
-                    }
-                } else {
-                    return parent.children[index + 1];
-                }
-            } else {
-                const parent = state.element;
-                const childrenCount = parent.children.length;
-                const index = getters.getIndexInArrayBySchemaId({
-                    arr: parent.children,
-                    needle: schemaId
-                });
-
-                if(index === (childrenCount - 1)) {
-                    return null;
-                } else {
-                    return parent.children[index + 1];
-                }
-            }
+            return flat.flatArr[index + 1];
         }
     },
 
@@ -174,65 +111,13 @@ export default {
     },
 
     getPrevSchema: (state, getters) => schemaId => {
-        function getLastChild(obj) {
-            let result = null;
-            if(!obj) {
-                return result;
-            }
-    
-            if(!result) {
-                if(obj.children && obj.children.length > 0) {
-                    const childObj = obj.children[obj.children.length - 1];
-                    result = getters.getLastChild(childObj);
-                } else {
-                    result = obj;
-                }
-            }
-    
-            return result;
-        }
+        const flat = getters.traverseTree(state.element);
 
-        if(!schemaId) {
+        const index = flat.flatMap.get(schemaId);
+        if(index === 0) {
             return null;
-        }
-        const schema = getters.getSchemaById(schemaId);
-
-        if(schema.parentId) {
-            const parent = getters.getSchemaById(schema.parentId);
-
-            const index = getters.getIndexInArrayBySchemaId({
-                arr: parent.children,
-                needle: schemaId
-            });
-
-            if(index === 0) {
-                return parent;
-            } else {
-                const prevParent = parent.children[index - 1];
-                if(prevParent.children && prevParent.children.length > 0) {
-                    return getLastChild(prevParent);
-                } else {
-                    return parent.children[index - 1];
-                }
-            }
-
         } else {
-            const parent = state.element;
-            const index = getters.getIndexInArrayBySchemaId({
-                arr: parent.children,
-                needle: schemaId
-            });
-
-            if(index === 0) {
-                return null;
-            } else {
-                const prevParent = parent.children[index - 1];
-                if(prevParent.children && prevParent.children.length > 0) {
-                    return getLastChild(prevParent);
-                } else {
-                    return parent.children[index - 1];
-                }
-            }
+            return flat.flatArr[index - 1];
         }
     },
 
