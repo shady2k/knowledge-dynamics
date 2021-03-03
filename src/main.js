@@ -20,8 +20,6 @@ const options = {
     showConsoleColors: true,
 };
 Vue.use(VueLogger, options);
-
-Vue.use(AsyncComputed);
 Vue.use(VueTextareaAutogrowDirective);
 
 new Vue({

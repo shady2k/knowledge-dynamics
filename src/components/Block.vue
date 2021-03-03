@@ -66,28 +66,6 @@ export default {
             this.focusBlock();
         }
     },
-    asyncComputed: {
-        /*block: {
-            get() {
-                return this.$store
-                    .dispatch("getBlockData", this.schema.blockId)
-                    .then((response) => {
-                        return response;
-                    });
-            },
-            default: {},
-        },
-        schema: {
-            get() {
-                return this.$store
-                    .dispatch("getSchemaById", this.blockId)
-                    .then((response) => {
-                        return response;
-                    });
-            },
-            default: {},
-        },*/
-    },
     watch: {
         activeBlock: function(activeBlock) {
             if (activeBlock === this.schemaId) {
