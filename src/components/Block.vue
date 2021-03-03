@@ -141,17 +141,31 @@ export default {
                     break;
                 case "ArrowUp":
                     e.preventDefault();
-                    this.$store.dispatch("setActiveBlock", {
-                        type: "prev",
-                        schemaId: this.schemaId
-                    });
+                    if(e.ctrlKey) {
+                        this.$store.dispatch("swapBlocks", {
+                            direction: "up",
+                            schema: this.schema
+                        });
+                    } else {
+                        this.$store.dispatch("setActiveBlock", {
+                            type: "prev",
+                            schemaId: this.schemaId
+                        });
+                    }
                     break;
                 case "ArrowDown":
                     e.preventDefault();
-                    this.$store.dispatch("setActiveBlock", {
-                        type: "next",
-                        schemaId: this.schemaId
-                    });
+                    if(e.ctrlKey) {
+                        this.$store.dispatch("swapBlocks", {
+                            direction: "down",
+                            schema: this.schema
+                        });
+                    } else {
+                        this.$store.dispatch("setActiveBlock", {
+                            type: "next",
+                            schemaId: this.schemaId
+                        });
+                    }
                     break;
             }
         },

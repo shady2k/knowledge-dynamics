@@ -1,5 +1,8 @@
 import utils from "./utils";
-import { Schema, Block } from "./class";
+import {
+    Schema,
+    Block
+} from "./class";
 
 export default {
     // addBlockToTheEnd(state, obj) {
@@ -47,9 +50,9 @@ export default {
                 if (e.schemaId == schemaId) {
                     result = e;
                     if (!e.children) e.children = [];
-                    
-                    if(e.children.length === 0) {
-                        if(e.parentId) {
+
+                    if (e.children.length === 0) {
+                        if (e.parentId) {
                             const parent = store.getters.getSchemaById(e.parentId);
                             parent.children.splice(index, 1);
                         } else {
@@ -68,7 +71,7 @@ export default {
         deleteSchemaById(state.element.children, schemaId);
     },
 
-    identBlock: function(state, obj) {
+    identBlock: function (state, obj) {
         // const store = this;
         let schema = obj.schema;
         const parent = obj.parent;
@@ -80,7 +83,7 @@ export default {
         target.children.push(schema);
     },
 
-    unIdentBlock: function(state, obj) {
+    unIdentBlock: function (state, obj) {
         // const store = this;
         let schema = obj.schema;
         const parent = obj.parent;
@@ -93,7 +96,7 @@ export default {
         target.children.splice(targetIndex, 0, schema);
     },
 
-    addSchema: function(state, obj) {
+    addSchema: function (state, obj) {
         const arr = obj.arr;
         const blockId = obj.blockId;
         const parentId = obj.parentId;
@@ -102,22 +105,36 @@ export default {
 
         const schemaIdNew = utils.generateUUID();
 
-        const schema = new Schema (state, {
+        const schema = new Schema(state, {
             schemaId: schemaIdNew,
             blockId: blockId,
             parentId: parentId,
             children: [],
         });
-        
+
         if (type === "unshift") {
             arr.unshift(schema);
 
-        } else if(type === "push") {
+        } else if (type === "push") {
             arr.push(schema);
 
-        } else if(type === "splice") {
+        } else if (type === "splice") {
             arr.splice(index, 0, schema);
         }
+    },
+
+    swapBlocks: function (state, obj) {
+        const index = obj.index;
+        const targetIndex = obj.targetIndex;
+        let arr = obj.arr;
+        let parent = obj.parent;
+
+        const swapArrayLocs = (arr, index1, index2) => {
+            [arr[index1], arr[index2]] = [arr[index2], arr[index1]]
+        }
+        
+        swapArrayLocs(arr, index, targetIndex);
+        state.element = Object.assign({}, state.element);
     },
 
     // addBySchemaId: function(state, obj) {
@@ -145,7 +162,7 @@ export default {
     //             if (e.schemaId == schemaId) {
     //                 result = e;
     //                 if (!e.children) e.children = [];
-                    
+
     //                 if (type === "unshift") {
     //                     schema.parentId = e.schemaId;
     //                     e.children.unshift(schema);

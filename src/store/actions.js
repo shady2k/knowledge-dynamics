@@ -169,7 +169,46 @@ export default {
             index,
             targetIndex
         });
+    },
 
+    swapBlocks(store, obj) {
+        const direction = obj.direction;
+        const schema = obj.schema;
+        if(!direction || !schema) return;
+
+        let parent = null;
+        if(schema.parentId) {
+            parent = store.getters.getSchemaById(schema.parentId);
+        } else {
+            return;
+        }
+
+        if(!parent) return;
+
+        const index = store.getters.getIndexInArrayBySchemaId({
+            arr: parent.children,
+            needle: schema.schemaId
+        });
+
+        if(index === -1) return;
+
+        let targetIndex = null;
+        if(direction == 'up') {
+            if(index === 0) return;
+            targetIndex = index - 1;
+        } else {
+            if(index === (parent.children.length - 1)) return;
+            targetIndex = index + 1;
+        }
+
+        if(!targetIndex) return;
+
+        store.commit('swapBlocks', {
+            parent,
+            arr: parent.children,
+            index,
+            targetIndex,
+        });
     },
 
     setActiveBlock(store, obj) {
