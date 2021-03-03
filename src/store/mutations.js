@@ -1,5 +1,5 @@
 import utils from "./utils";
-import { Schema } from "./class";
+import { Schema, Block } from "./class";
 
 export default {
     // addBlockToTheEnd(state, obj) {
@@ -32,12 +32,7 @@ export default {
     },
 
     addBlock(state, block) {
-        const blockTemplate = {
-            blockId: utils.generateUUID(),
-            title: '',
-            data: ''
-        }
-        block = Object.assign(blockTemplate, block);
+        block = new Block(block);
         state.element.blocks.push(block);
     },
 

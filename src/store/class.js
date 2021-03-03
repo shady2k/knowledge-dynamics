@@ -14,4 +14,12 @@ class Schema {
     }
 }
 
-export { Schema };
+class Block {
+    constructor(block) {
+        this.blockId = block.blockId || utils.generateUUID();
+        this.title = block.title || '';
+        this.data = block.data || '';
+    }
+}
+
+export { Schema, Block };
