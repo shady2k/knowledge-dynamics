@@ -9,7 +9,7 @@
           <div id="subconatiner-header" class="flex-none">
             <Header />
           </div>
-          <div id="subcontainer-content" class="flex-1 w-full h-full">
+          <div id="subcontainer-content" class="flex-1 w-full h-full overflow-y-auto overflow-x-hidden pb-3">
             <Element />
           </div>
         </div>
