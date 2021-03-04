@@ -20,6 +20,7 @@ const options = {
 };
 Vue.use(VueLogger, options);
 Vue.use(VueTextareaAutogrowDirective);
+Vue.prototype.$eventHub = new Vue();
 
 new Vue({
     render: (h) => h(App),

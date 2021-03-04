@@ -28,6 +28,7 @@
                 <textarea
                     v-if="isEdit"
                     @blur="blurElement"
+                    @input="taInput"
                     v-model="data"
                     autocapitalize="none"
                     rows="1"
@@ -63,15 +64,50 @@ export default {
     },
     mounted() {
         if (this.activeBlock === this.schemaId) {
-            this.focusBlock();
+            this.$log.debug('mounted', this.schemaId);
+            this.isEdit = true;
+            this.focusBlock(this.schemaId);
         }
+        this.$eventHub.$on('unsetActiveBlock', this.blurElement);
+        this.$eventHub.$on('forceEdit', this.forceEdit);
+    },
+    created() {
+    },
+    beforeDestroy() {
+        this.$eventHub.$off('unsetActiveBlock');
+        this.$eventHub.$off('forceEdit');
+    },
+    updated() {
+        // if (this.activeBlock === this.schemaId) {
+        //     this.$log.debug('updated', this.schemaId);
+        //     this.isUpdated = true;
+        // }
     },
     watch: {
-        activeBlock: function(activeBlock) {
+        // isUpdated: function() {
+        //     if (this.isUpdated) {
+        //         this.$nextTick(() => {
+        //             if(this.activeBlock === this.schemaId && !this.isEdit) {
+        //                 this.$log.debug('isUpdated', this.schemaId);
+        //                 this.isEdit = true;
+        //                 this.focusBlock(this.schemaId);
+        //                 this.isUpdated = false;
+        //             } else {
+        //                 this.isUpdated = false;
+        //             }
+        //         });
+        //     }
+        // }
+        /*activeBlock: function(activeBlock) {
             if (activeBlock === this.schemaId) {
-                this.focusBlock();
+                if(!this.isEdit) {
+                    const that = this;
+                    this.$nextTick(() => {
+                        that.focusBlock();
+                    });
+                }
             }
-        },
+        },*/
     },
     computed: {
         block: {
@@ -109,9 +145,25 @@ export default {
     data() {
         return {
             isEdit: false,
+            isUpdated: false,
+            taCursorPosition: 0
         };
     },
     methods: {
+        taInput: function() {
+            if(this.$refs["editor-" + this.schemaId]) {
+                this.taCursorPosition = this.$refs["editor-" + this.schemaId].selectionStart;
+            }
+        },
+        forceEdit: function() {
+            if (this.activeBlock === this.schemaId) {
+                this.$log.debug('forceEdit', this.schemaId);
+                this.$nextTick(() => {
+                    this.isEdit = true;
+                    this.focusBlock(this.schemaId, this.taCursorPosition, this.taCursorPosition);
+                });
+            }
+        },
         keyHandlerEditor: function(e) {
             //this.$log.debug(e);
             switch(e.code) {
@@ -172,16 +224,12 @@ export default {
         deleteBlock: function() {
             this.$store.dispatch("deleteBlock", this.schema);
         },
-        focusBlock: function() {
-            const schemaId = this.schemaId;
-            const range = this.data.length;
-
-            this.isEdit = true;
-            this.$nextTick(() => {
-                this.$refs["editor-" + schemaId].focus();
-                this.$refs["editor-" + schemaId].setSelectionRange(range, range);
-            });
-        },
+        // focusBlock: function() {
+        //     if(this.isEdit) return;
+        //     this.isEdit = true;
+        //     const range = this.data.length;
+        //     this.focusBlock(range, range);
+        // },
         addBlock: async function() {
             this.$store.dispatch("addBlock", { 
                     schema: this.schema,
@@ -197,7 +245,37 @@ export default {
         blur: function(e) {
             e.target.blur();
         },
+        edit: function() {
+
+        },
+        focusBlock: function(schemaId, start, end) {
+            if(start === null || end === null) {
+                const range = window.getSelection().getRangeAt(0);
+                start = end = range;
+            }
+
+            // const selectionLength = range.endOffset - range.startOffset;
+            // range.setStart(target, 0);
+            // let end = range.toString().length;
+            // if (end >= 1) end--;
+            // let start = end - selectionLength;
+
+            this.$nextTick(() => {
+                //that.$log.debug(that.schemaId, that.$refs["editor-" + that.schemaId]);
+                if(this.$refs["editor-" + schemaId]) {
+                    this.$refs["editor-" + schemaId].focus();
+                    this.$refs["editor-" + schemaId].setSelectionRange(
+                        start,
+                        end
+                    );
+                    this.taCursorPosition = start;
+                }
+            });
+        },
         clickSpan: function(e) {
+            this.$log.debug('clickSpan');
+            this.$store.commit("setActiveBlock", this.schema.schemaId);
+            this.isEdit = true;
             const range = window.getSelection().getRangeAt(0);
             let target = e.target;
 
@@ -205,26 +283,11 @@ export default {
                 target = target.parentElement;
                 if (!target) return;
             }
+            this.focusBlock(this.schemaId, range.startOffset - 1, range.endOffset - 1);
 
-            const selectionLength = range.endOffset - range.startOffset;
-            range.setStart(target, 0);
-            let end = range.toString().length;
-            if (end >= 1) end--;
-            let start = end - selectionLength;
-
-            this.isEdit = !this.isEdit;
-            this.$store.commit("setActiveBlock", this.schema.schemaId);
-            this.$nextTick(() => {
-                this.$refs["editor-" + this.schemaId].focus();
-                this.$refs["editor-" + this.schemaId].setSelectionRange(
-                    start,
-                    end
-                );
-            });
         },
         blurElement: function() {
-            //this.$store.commit("unsetActiveBlock");
-            this.isEdit = !this.isEdit;
+            this.isEdit = false;
         },
     },
 };

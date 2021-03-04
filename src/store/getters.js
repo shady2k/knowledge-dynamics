@@ -11,6 +11,10 @@ export default {
         return state.element.children;
     },
 
+    getRootSchema: state => {
+        return state.element;
+    },
+
     getSchemaById: (state, getters) => schemaId => {
         if(!schemaId) {
             return null;

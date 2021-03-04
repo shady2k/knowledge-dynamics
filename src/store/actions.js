@@ -151,6 +151,15 @@ export default {
                 });
                 targetIndex = parentBlockIndex + 1;
             }
+        } else {
+            const prevBlock = store.getters.getPrevSchema(schema.schemaId);
+            if(!prevBlock) return;
+
+            const prevBlockIndex = store.getters.getIndexInArrayBySchemaId({
+                arr: target.children,
+                needle: prevBlock.schemaId
+            });
+            targetIndex = prevBlockIndex + 1;
         }
 
         if(!targetIndex) return;
@@ -180,7 +189,7 @@ export default {
         if(schema.parentId) {
             parent = store.getters.getSchemaById(schema.parentId);
         } else {
-            return;
+            parent = store.getters.getRootSchema;
         }
 
         if(!parent) return;
@@ -201,7 +210,7 @@ export default {
             targetIndex = index + 1;
         }
 
-        if(!targetIndex) return;
+        if(targetIndex === null && targetIndex < 0) return;
 
         store.commit('swapBlocks', {
             parent,
@@ -209,20 +218,22 @@ export default {
             index,
             targetIndex,
         });
+
+        this._vm.$eventHub.$emit('forceEdit');
     },
 
     setActiveBlock(store, obj) {
         const type = obj.type || 'current';
         let schemaId = null;
 
-        if(obj.type === "current") {
+        if(type === "current") {
             schemaId = obj.schemaId;
-        } else if(obj.type === "prev") {
+        } else if(type === "prev") {
             const schema = store.getters.getPrevSchema(obj.schemaId);
             if(schema) {
                 schemaId = schema.schemaId;
             }
-        } else if(obj.type === "next") {
+        } else if(type === "next") {
             const schema = store.getters.getNextSchema(obj.schemaId);
             if(schema) {
                 schemaId = schema.schemaId;
@@ -230,5 +241,15 @@ export default {
         }
         
         store.commit('setActiveBlock', schemaId);
+    },
+
+    unsetActiveBlock(store) {
+        store.commit('unsetActiveBlock');
+    },
+
+    unsetActiveBlockById(store, schemaId) {
+        if(store.state.editor.activeBlock === schemaId) {
+            store.commit('unsetActiveBlock');
+        }
     }
 };
