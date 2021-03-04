@@ -3,6 +3,7 @@ import App from "./App.vue";
 import store from './store';
 import VueLogger from "vuejs-logger";
 import VueTextareaAutogrowDirective from "vue-textarea-autogrow-directive";
+import VueNeo4j from 'vue-neo4j';
 import "./assets/css/tailwind.css";
 
 Vue.config.productionTip = false;
@@ -20,6 +21,7 @@ const options = {
 };
 Vue.use(VueLogger, options);
 Vue.use(VueTextareaAutogrowDirective);
+Vue.use(VueNeo4j);
 Vue.prototype.$eventHub = new Vue();
 
 new Vue({

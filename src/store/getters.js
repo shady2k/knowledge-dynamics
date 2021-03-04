@@ -174,7 +174,7 @@ export default {
         }
     },
 
-    getBlockBySchemaId: state => schemaId => {
+    getBlockBySchemaId: () => schemaId => {
         const schema = this.getters.getSchemaById(schemaId);
         return this.getters.getBlockById(schema.blockId);
     },

@@ -127,7 +127,7 @@ export default {
         const index = obj.index;
         const targetIndex = obj.targetIndex;
         let arr = obj.arr;
-        let parent = obj.parent;
+        //let parent = obj.parent;
 
         const swapArrayLocs = (arr, index1, index2) => {
             [arr[index1], arr[index2]] = [arr[index2], arr[index1]]
