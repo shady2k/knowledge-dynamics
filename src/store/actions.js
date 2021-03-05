@@ -1,9 +1,10 @@
 import utils from "./utils";
+const stringifyObject = require('stringify-object');
+const moment = require('moment'); 
 
 export default {
     addBlock(store, obj) {
         const schema = obj.schema;
-        const schemaId = schema.schemaId;
 
         let block = obj.block;
         if (!block) {
@@ -24,7 +25,7 @@ export default {
             const childrenCount = parent.children.length;
             const index = store.getters.getIndexInArrayBySchemaId({
                 arr: parent.children,
-                needle: schemaId,
+                needle: schema.schemaId,
             });
 
             if (index === childrenCount - 1) {
@@ -289,7 +290,6 @@ export default {
     },
 
     saveBlock(store, blockId) {
-        const stringifyObject = require('stringify-object');
         const block = store.getters.getBlockById(blockId);
         const obj = `MERGE (p:Block {blockId: '${blockId}'})
                      SET p = ${stringifyObject(block)}`;
@@ -297,6 +297,13 @@ export default {
     },
 
     createTodayElement(store) {
+        const title = moment().locale('ru').format('LL');
+        const element = {
+            title
+        };
         
+        store.commit("createTodayElement", element);
+
+        return store.state.element;
     }
 };

@@ -22,4 +22,18 @@ class Block {
     }
 }
 
-export { Schema, Block };
+class Element {
+    constructor(element) {
+        this.schemaId = element.schemaId || utils.generateUUID();
+        this.title = element.title || '';
+        this.data = element.data || '';
+        this.children = element.children || [];
+        this.blocks = element.blocks || [];
+    }
+
+    get length() {
+        return this.blocks.length;
+    }
+}
+
+export { Schema, Block, Element };

@@ -22,18 +22,31 @@ export default {
         Block,
     },
     mounted() {
+        this.getSchema();
     },
     computed: {
         title() {
             return this.$store.getters.getElementTitle;
         },
-        schema() {
-            if(this.$store.getters.getSchemaLength === 0) {
-                this.$store.commit('addBlockToTheEnd', { data: 'Проверяем' });
-            }
-            return this.$store.getters.getSchema;
-        },
     },
+    methods: {
+        getSchema: function() {
+            if(this.$store.getters.getSchemaLength === 0) {
+                this.$store.dispatch('addBlock', {
+                    schema: this.$store.getters.getRootSchema
+                }).then(() => {
+                    this.schema = this.$store.getters.getSchema;
+                });
+            } else {
+                this.schema = this.$store.getters.getSchema;
+            }
+        }
+    },
+    data() {
+        return {
+            schema: []
+        }
+    }
 };
 </script>
 

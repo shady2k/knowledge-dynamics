@@ -14,7 +14,7 @@
                         class="flex-1 w-full h-full overflow-y-auto overflow-x-hidden pb-3"
                         @click.self="unsetActiveBlock"
                     >
-                        <Element />
+                        <Element v-if="isDataReady" />
                     </div>
                 </div>
             </div>
@@ -36,10 +36,16 @@ export default {
     },
     mounted() {
         this.$store.dispatch("connectDB");
+        this.init();
     },
     created() {
     },
     methods: {
+        init: function() {
+            this.$store.dispatch('createTodayElement').then(() => {
+                this.isDataReady = true;
+            });
+        },
         unsetActiveBlock: function() {
           this.$store.dispatch("unsetActiveBlock");
           this.$eventHub.$emit('unsetActiveBlock');
@@ -47,6 +53,7 @@ export default {
     },
     data() {
         return {
+            isDataReady: false
         }
     }
 };
