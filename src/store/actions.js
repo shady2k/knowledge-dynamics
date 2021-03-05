@@ -278,35 +278,62 @@ export default {
     },
 
     queryDB(store, obj) {
+        if(!obj) return;
         const session = this._vm.$neo4j.getSession();
-        session
+        return new Promise((resolve, reject) => {
+            session
             .run(obj)
             .then((res) => {
                 this._vm.$log.debug(res);
-                return res;
+                resolve(res);
             })
             .then(() => {
                 session.close();
             });
+        });
     },
 
-    saveBlock(store, blockId) {
-        const block = store.getters.getBlockById(blockId);
-        const obj = `MERGE (p:Block {blockId: '${blockId}'})
-                     SET p = ${stringifyObject(block)}
-                     RETURN id(p)
-                     `;
-        store.dispatch('queryDB', obj).then((response) => {
-            if(response) {
-                if(response.records.length === 1 && response.records[0]) {
-                    const dbId = response.records[0].get('id(p)').toNumber();
-                    const resObj = {
-                        dbId
-                    };
-                    store.commit('changeBlock', resObj);
-                }
+    saveBlock(store, schema) {
+        let parent = null;
+        if (schema.parentId) {
+            parent = store.getters.getSchemaById(schema.parentId);
+        } else {
+            parent = store.getters.getRootSchema;
+        }
+        const block = store.getters.getBlockById(schema.blockId);
+
+        let query = null;
+        if(parent) {
+            if(parent.blockId !== schema.blockId) {
+                const blockParent = store.getters.getBlockById(parent.blockId);
+                query = `MERGE (b:Block {blockId: '${schema.blockId}'})-[:RELATED]-(p:Block {blockId: '${parent.blockId}'})
+                            SET b = ${stringifyObject(block)}
+                            SET p = ${stringifyObject(blockParent)}
+                            RETURN id(b)
+                            `;
             }
-        });
+        } else {
+            query = `MERGE (b:Block {blockId: '${schema.blockId}'})
+                        SET b = ${stringifyObject(block)}
+                        RETURN id(b)
+                        `;
+        }
+        if(query) {
+            store.dispatch('queryDB', query).then((response) => {
+                if(response) {
+                    if(response.records.length === 1 && response.records[0]) {
+                        const dbId = response.records[0].get('id(b)').toNumber();
+                        if(block.dbId !== dbId) {
+                            const resObj = {
+                                blockId: block.blockId,
+                                dbId
+                            };
+                            store.commit('changeBlock', resObj);
+                        }
+                    }
+                }
+            });
+        }
     },
 
     createTodayElement(store) {

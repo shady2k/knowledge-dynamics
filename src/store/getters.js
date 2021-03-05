@@ -197,4 +197,19 @@ export default {
         const schema = this.getters.getSchemaById(schemaId);
         return this.getters.getBlockById(schema.blockId);
     },
+
+    getSchemaByBlockId: (state, getters) => blockId => {
+        const flat = getters.traversedTree;
+        console.log(flat);
+        // const index = flat.flatMap.get(schemaId);
+        // if(index === (flat.flatArr.length - 1)) {
+        //     return null;
+        // } else {
+        //     return flat.flatArr[index + 1];
+        // }
+    },
+
+    getParentBlockById: (state, getters) => blockId => {
+
+    },
 };

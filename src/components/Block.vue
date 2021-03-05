@@ -153,11 +153,11 @@ export default {
         saveBlock: function() {
             if(!this.$store.getters.getRootSchema.dbId) {
                 if(!this.$store.getters.getIsElementEmpty) {
-                    this.$store.dispatch('saveBlock', this.$store.getters.getRootSchema.blockId);
+                    this.$store.dispatch('saveBlock', this.$store.getters.getRootSchema);
                 }
             }            
             if(this.data !== "") { //TODO!
-                this.$store.dispatch('saveBlock', this.schema.blockId);
+                this.$store.dispatch('saveBlock', this.schema);
             }
         },
         taInput: function() {
