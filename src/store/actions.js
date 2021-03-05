@@ -287,4 +287,16 @@ export default {
                 session.close();
             });
     },
+
+    saveBlock(store, blockId) {
+        const stringifyObject = require('stringify-object');
+        const block = store.getters.getBlockById(blockId);
+        const obj = `MERGE (p:Block {blockId: '${blockId}'})
+                     SET p = ${stringifyObject(block)}`;
+        store.dispatch('queryDB', obj);
+    },
+
+    createTodayElement(store) {
+        
+    }
 };
