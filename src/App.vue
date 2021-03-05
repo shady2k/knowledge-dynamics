@@ -9,7 +9,6 @@
                     <div id="subconatiner-header" class="flex-none">
                         <Header />
                     </div>
-                    <button @click="queryDB">Query</button>
                     <div
                         id="subcontainer-content"
                         class="flex-1 w-full h-full overflow-y-auto overflow-x-hidden pb-3"
@@ -41,13 +40,6 @@ export default {
     created() {
     },
     methods: {
-        queryDB: function() {
-            const query = "MATCH (n:Person) RETURN n LIMIT 25";
-            this.$store.dispatch("queryDB", query);
-        },
-        myOnConnectError(error) {
-            this.$log.error(error);
-        },
         unsetActiveBlock: function() {
           this.$store.dispatch("unsetActiveBlock");
           this.$eventHub.$emit('unsetActiveBlock');

@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "moment": "^2.29.1",
+    "stringify-object": "^3.3.0",
     "vue": "^2.6.11",
     "vue-neo4j": "^0.4.5",
     "vue-textarea-autogrow-directive": "^0.1.7",

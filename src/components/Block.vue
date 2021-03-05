@@ -287,7 +287,10 @@ export default {
 
         },
         blurElement: function() {
-            this.isEdit = false;
+            if(this.isEdit) {
+                this.isEdit = false;
+                this.$store.dispatch('saveBlock', this.schema.blockId);
+            }
         },
     },
 };
