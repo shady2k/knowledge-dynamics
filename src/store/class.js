@@ -17,6 +17,7 @@ class Schema {
 class Block {
     constructor(block) {
         this.blockId = block.blockId || utils.generateUUID();
+        this.dbId = block.dbId || null;
         this.title = block.title || '';
         this.data = block.data || '';
     }
@@ -25,7 +26,8 @@ class Block {
 class Element {
     constructor(element) {
         this.schemaId = element.schemaId || utils.generateUUID();
-        this.title = element.title || '';
+        this.blockId = element.blockId || utils.generateUUID();
+        this.dbId = element.dbId || null;
         this.data = element.data || '';
         this.children = element.children || [];
         this.blocks = element.blocks || [];

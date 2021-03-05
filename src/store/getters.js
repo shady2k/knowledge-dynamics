@@ -1,10 +1,12 @@
 export default {
-    getElementTitle: state => {
-        return state.element.title;
+    getElementTitle: (state, getters) => {
+        if(!state.element.blockId) return null;
+        const block = getters.getBlockById(state.element.blockId);
+        return block.title;
     },
 
     getSchemaLength: state => {
-        return state.element.length;
+        return state.element.children.length;
     },
 
     getSchema: state => {
@@ -15,9 +17,26 @@ export default {
         return state.element;
     },
 
+    getIsElementEmpty: state => {
+        if(state.element.blocks && state.element.blocks.length > 0) {
+            const blocks = state.element.blocks;
+            const res = blocks.some((block) => {
+                if(block.data !== '' && block.blockId !== state.element.blockId) return true;
+            });
+            return !res;
+        } else {
+            return true;
+        }
+    },
+
     getSchemaById: (state, getters) => schemaId => {
         if(!schemaId) {
             return null;
+        }
+
+        const rootSchema = getters.getRootSchema;
+        if(getters.getRootSchema.schemaId === schemaId) {
+            return rootSchema;
         }
 
         const flat = getters.traversedTree;

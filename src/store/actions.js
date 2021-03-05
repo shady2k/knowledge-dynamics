@@ -283,6 +283,7 @@ export default {
             .run(obj)
             .then((res) => {
                 this._vm.$log.debug(res);
+                return res;
             })
             .then(() => {
                 session.close();
@@ -292,17 +293,37 @@ export default {
     saveBlock(store, blockId) {
         const block = store.getters.getBlockById(blockId);
         const obj = `MERGE (p:Block {blockId: '${blockId}'})
-                     SET p = ${stringifyObject(block)}`;
-        store.dispatch('queryDB', obj);
+                     SET p = ${stringifyObject(block)}
+                     RETURN id(p)
+                     `;
+        store.dispatch('queryDB', obj).then((response) => {
+            if(response) {
+                if(response.records.length === 1 && response.records[0]) {
+                    const dbId = response.records[0].get('id(p)').toNumber();
+                    const resObj = {
+                        dbId
+                    };
+                    store.commit('changeBlock', resObj);
+                }
+            }
+        });
     },
 
     createTodayElement(store) {
         const title = moment().locale('ru').format('LL');
+        const blockIdNew = utils.generateUUID();
+        const block = {
+            blockId: blockIdNew,
+            title,
+            data: title
+        };
+
         const element = {
-            title
+            blockId: blockIdNew
         };
         
         store.commit("createTodayElement", element);
+        store.commit("addBlock", block);
 
         return store.state.element;
     }

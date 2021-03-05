@@ -150,6 +150,16 @@ export default {
         };
     },
     methods: {
+        saveBlock: function() {
+            if(!this.$store.getters.getRootSchema.dbId) {
+                if(!this.$store.getters.getIsElementEmpty) {
+                    this.$store.dispatch('saveBlock', this.$store.getters.getRootSchema.blockId);
+                }
+            }            
+            if(this.data !== "") { //TODO!
+                this.$store.dispatch('saveBlock', this.schema.blockId);
+            }
+        },
         taInput: function() {
             if(this.$refs["editor-" + this.schemaId]) {
                 this.taCursorPosition = this.$refs["editor-" + this.schemaId].selectionStart;
@@ -289,7 +299,7 @@ export default {
         blurElement: function() {
             if(this.isEdit) {
                 this.isEdit = false;
-                this.$store.dispatch('saveBlock', this.schema.blockId);
+                this.saveBlock();
             }
         },
     },

@@ -9,7 +9,8 @@ export default {
     changeBlock(state, obj) {
         state.element.blocks.some((element) => {
             if (element.blockId == obj.blockId) {
-                element.data = obj.data;
+                Object.assign(element, obj);
+                //element.data = obj.data;
                 return true;
             } else {
                 return false;
@@ -129,9 +130,7 @@ export default {
     },
 
     createTodayElement(state, obj) {
-        const element = new Element({
-            title: obj.title
-        });
+        const element = new Element(obj);
         state.element = element;
     }
 
