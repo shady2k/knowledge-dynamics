@@ -280,7 +280,7 @@ export default {
     queryDB(store, obj) {
         if(!obj) return;
         const session = this._vm.$neo4j.getSession();
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             session
             .run(obj)
             .then((res) => {
@@ -306,14 +306,17 @@ export default {
         if(parent) {
             if(parent.blockId !== schema.blockId) {
                 const blockParent = store.getters.getBlockById(parent.blockId);
-                query = `MERGE (b:Block {blockId: '${schema.blockId}'})-[:RELATED]-(p:Block {blockId: '${parent.blockId}'})
+                const type = block.type ? ':'+block.type.toUpperCase() : '';
+                const typeParent = blockParent.type ? ':'+blockParent.type.toUpperCase() : '';
+                query = `MERGE (b:Block${type} {blockId: '${schema.blockId}'})-[:RELATED]-(p:Block${typeParent} {blockId: '${parent.blockId}'})
                             SET b = ${stringifyObject(block)}
                             SET p = ${stringifyObject(blockParent)}
                             RETURN id(b)
                             `;
             }
         } else {
-            query = `MERGE (b:Block {blockId: '${schema.blockId}'})
+            const type = block.type ? ':'+block.type.toUpperCase() : '';
+            query = `MERGE (b:Block${type} {blockId: '${schema.blockId}'})
                         SET b = ${stringifyObject(block)}
                         RETURN id(b)
                         `;
@@ -342,7 +345,8 @@ export default {
         const block = {
             blockId: blockIdNew,
             title,
-            data: title
+            data: title,
+            type: 'JOURNAL'
         };
 
         const element = {

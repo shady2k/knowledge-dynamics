@@ -20,6 +20,7 @@ class Block {
         this.dbId = block.dbId || null;
         this.title = block.title || '';
         this.data = block.data || '';
+        this.type = block.type || null;
     }
 }
 
@@ -29,6 +30,7 @@ class Element {
         this.blockId = element.blockId || utils.generateUUID();
         this.dbId = element.dbId || null;
         this.data = element.data || '';
+        this.type = element.type || null;
         this.children = element.children || [];
         this.blocks = element.blocks || [];
     }
