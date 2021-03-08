@@ -397,37 +397,69 @@ export default {
     },
 
     getTodayElementFromDB(store) {
+        function traverse(schema, obj, parent) {
+            if(obj.related && obj.related.length > 0) {
+                obj.related.forEach((item) => {
+                    console.log(item);
+
+                    const block = new Block({
+                        blockId: item.blockId,
+                        dbId: item._id.toNumber(),
+                        title: item.title,
+                        data: item.data,
+                        type: item.type,
+                    });
+                    store.commit('addBlock', block);
+
+                    store.commit("addSchema", {
+                        arr: schema.children,
+                        blockId: item.blockId,
+                        parentId: parent.schemaId,
+                        type: "push",
+                    });
+
+                    traverse(schema.children, item, schema);
+                });
+            }
+        }
+
         let resolve = null;
         let reject = null;
 
         const title = store.getters.getTodayJounalTile;
-        const query = `MATCH f=(p:Block:Journal {title: '${title}'})-[:RELATED*]-(r) RETURN p, f`;
-        /*
-        MATCH f=(p:Block:Journal)-[:RELATED*]-(r)
-        WHERE id(p) = 140
-        WITH COLLECT(f) AS ps
-        CALL apoc.convert.toTree(ps) YIELD value
-        RETURN value AS subtree
-        */
+        //const query = `MATCH f=(p:Block:Journal {title: '${title}'})-[:RELATED*]-(r) RETURN p, f`;
+        let query = `MATCH f=(p:Block:Journal {title: '${title}'})-[:RELATED*]-(r)\n`;
+        query += `WITH COLLECT(f) AS ps\n`;
+        query += `CALL apoc.convert.toTree(ps) YIELD value\n`;
+        query += `RETURN value AS subtree`;
+
         if(query) {
             const queryObj = { query };
             store.dispatch('queryDB', queryObj).then((response) => {
                 if(response) {
                     if(response.records.length >= 1) {
                         if(response.records[0]) {
-                            const blockDb = response.records[0].get('p');
+                            const elementDB = response.records[0].get('subtree');
+                            this._vm.$log.debug(elementDB);
+
                             const block = new Block({
-                                blockId: blockDb.properties.blockId,
-                                dbId: blockDb.identity.toNumber(),
-                                title: blockDb.properties.title,
-                                data: blockDb.properties.data,
-                                type: blockDb.properties.type,
+                                blockId: elementDB.blockId,
+                                dbId: elementDB._id.toNumber(),
+                                title: elementDB.title,
+                                data: elementDB.data,
+                                type: elementDB.type,
                             });
                             store.dispatch('createTodayElement', block).then(() => {
-                                store.dispatch('parseDBResponse', response).then(() => {
-                                    resolve(true);
-                                });
-                            })
+                                const rootSchema = store.getters.getRootSchema;
+                                traverse(rootSchema, elementDB, rootSchema);
+
+                            });
+
+                            // utils.traverse(flatMap, flatArr, subtree, 'related');
+                            // this._vm.$log.debug(flatMap);
+                            // this._vm.$log.debug(flatArr);
+
+
                         }
                     } else {
                         resolve(false);
