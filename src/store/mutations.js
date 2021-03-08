@@ -86,11 +86,10 @@ export default {
         const parentId = obj.parentId;
         const type = obj.type || "push";
         const index = obj.index || null;
-
-        const schemaIdNew = utils.generateUUID();
+        const schemaId = obj.schemaId || utils.generateUUID();
 
         const schema = new Schema(state, {
-            schemaId: schemaIdNew,
+            schemaId: schemaId,
             blockId: blockId,
             parentId: parentId,
             children: [],

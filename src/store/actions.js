@@ -397,10 +397,9 @@ export default {
     },
 
     getTodayElementFromDB(store) {
-        function traverse(schema, obj, parent) {
+        function traverse(schema, obj, parentId) {
             if(obj.related && obj.related.length > 0) {
                 obj.related.forEach((item) => {
-                    console.log(item);
 
                     const block = new Block({
                         blockId: item.blockId,
@@ -411,14 +410,19 @@ export default {
                     });
                     store.commit('addBlock', block);
 
+                    const schemaIdNew = utils.generateUUID();
+
                     store.commit("addSchema", {
+                        schemaId: schemaIdNew,
                         arr: schema.children,
                         blockId: item.blockId,
-                        parentId: parent.schemaId,
+                        parentId: parentId,
                         type: "push",
                     });
 
-                    traverse(schema.children, item, schema);
+                    const newSchema = store.getters.getSchemaById(schemaIdNew);
+
+                    traverse(newSchema, item, schema.schemaId);
                 });
             }
         }
@@ -451,8 +455,8 @@ export default {
                             });
                             store.dispatch('createTodayElement', block).then(() => {
                                 const rootSchema = store.getters.getRootSchema;
-                                traverse(rootSchema, elementDB, rootSchema);
-
+                                traverse(rootSchema, elementDB, rootSchema.schemaId);
+                                resolve(true);
                             });
 
                             // utils.traverse(flatMap, flatArr, subtree, 'related');
@@ -469,71 +473,6 @@ export default {
                 }
             });
         }
-
-        return new Promise((resolveP, rejectP) => {
-            resolve = resolveP;
-            reject = rejectP;
-        });
-    },
-
-    parseDBResponse(store, response) {
-        let resolve = null;
-        let reject = null;
-
-        this._vm.$log.debug('nodeStart', store.state.element);
-        response.records.forEach((item) => {
-            const rootSchema = store.getters.getRootSchema;
-            // const blockDbParent = response.records[0].get('p');
-
-            // if(!store.getters.getBlockById(blockDbParent.properties.blockId)) {
-            //     const block = new Block({
-            //         blockId: blockDbParent.properties.blockId,
-            //         dbId: blockDbParent.identity.toNumber(),
-            //         title: blockDbParent.properties.title,
-            //         data: blockDbParent.properties.data,
-            //         type: blockDbParent.properties.type,
-            //     });
-            //     store.commit('addBlock', block);
-
-            //     store.commit("addSchema", {
-            //         arr: rootSchema.children,
-            //         blockId: blockDbParent.properties.blockId,
-            //         parentId: rootSchema.schemaId,
-            //         type: "push",
-            //     });
-            // }
-
-            const pathDb = item.get('f');
-            const segments = pathDb.segments;
-            segments.forEach((pathSegment) => {
-                const nodeStart = pathSegment.start;
-                const nodeEnd = pathSegment.end;
-                const parentSchema = store.getters.getSchemaById(nodeStart.properties.blockId);
-
-                const blockDb = nodeEnd;
-
-                this._vm.$log.debug('nodeStart', nodeStart);
-                this._vm.$log.debug('nodeEnd', nodeEnd);
-
-                const block = new Block({
-                    blockId: blockDb.properties.blockId,
-                    dbId: blockDb.identity.toNumber(),
-                    title: blockDb.properties.title,
-                    data: blockDb.properties.data,
-                    type: blockDb.properties.type,
-                });
-                store.commit('addBlock', block);
-
-                store.commit("addSchema", {
-                    arr: parentSchema.children,
-                    blockId: blockDb.properties.blockId,
-                    parentId: nodeStart.properties.blockId,
-                    type: "push",
-                });
-            });
-
-            resolve();
-        });
 
         return new Promise((resolveP, rejectP) => {
             resolve = resolveP;

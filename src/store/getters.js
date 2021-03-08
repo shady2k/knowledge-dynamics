@@ -83,9 +83,9 @@ export default {
     },
 
     traversedTree: (state) => {
-        function traverse(flatMap, flatArr, obj, children) {
-            if(obj[children] && obj[children].length > 0) {
-                obj[children].forEach((element) => {
+        function traverse(flatMap, flatArr, obj) {
+            if(obj.children && obj.children.length > 0) {
+                obj.children.forEach((element) => {
                     const index = flatArr.push(element) - 1;
                     flatMap.set(element.schemaId, index);
                     traverse(flatMap, flatArr, element);
