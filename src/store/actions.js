@@ -380,23 +380,62 @@ export default {
         let reject = null;
 
         const title = store.getters.getTodayJounalTile;
-        const query = `MATCH (b:Block:Journal {title: '${title}'}) RETURN b`;
+        const query = `MATCH (p:Block:Journal {title: '${title}'})-[:RELATED]-(r) RETURN p, r`;
         if(query) {
             store.dispatch('queryDB', query).then((response) => {
                 if(response) {
-                    if(response.records.length >= 1 && response.records[0]) {
-                        const blockDb = response.records[0].get('b');
-                        this._vm.$log.debug(blockDb);
+                    if(response.records.length >= 1) {
+                        if(response.records[0]) {
+                            const blockDb = response.records[0].get('p');
+                            const block = new Block({
+                                blockId: blockDb.properties.blockId,
+                                dbId: blockDb.identity.toNumber(),
+                                title: blockDb.properties.title,
+                                data: blockDb.properties.data,
+                                type: blockDb.properties.type,
+                            });
+                            store.dispatch('createTodayElement', block);
+                        }
                         
-                        const block = new Block({
-                            blockId: blockDb.properties.blockId,
-                            dbId: blockDb.identity.toNumber(),
-                            title: blockDb.properties.title,
-                            data: blockDb.properties.data,
-                            type: blockDb.properties.type,
+                        response.records.forEach((item) => {
+                            const rootSchema = store.getters.getRootSchema;
+                            const blockDbParent = response.records[0].get('p');
+
+                            if(!store.getters.getBlockById(blockDbParent.properties.blockId)) {
+                                const block = new Block({
+                                    blockId: blockDbParent.properties.blockId,
+                                    dbId: blockDbParent.identity.toNumber(),
+                                    title: blockDbParent.properties.title,
+                                    data: blockDbParent.properties.data,
+                                    type: blockDbParent.properties.type,
+                                });
+                                store.commit('addBlock', block);
+
+                                store.commit("addSchema", {
+                                    arr: rootSchema.children,
+                                    blockId: blockDbParent.properties.blockId,
+                                    parentId: rootSchema.schemaId,
+                                    type: "push",
+                                });
+                            }
+
+                            const blockDb = item.get('r');
+                            const block = new Block({
+                                blockId: blockDb.properties.blockId,
+                                dbId: blockDb.identity.toNumber(),
+                                title: blockDb.properties.title,
+                                data: blockDb.properties.data,
+                                type: blockDb.properties.type,
+                            });
+                            store.commit('addBlock', block);
+
+                            store.commit("addSchema", {
+                                arr: rootSchema.children,
+                                blockId: blockDb.properties.blockId,
+                                parentId: null,
+                                type: "push",
+                            });
                         });
-                        
-                        store.dispatch('createTodayElement', block);
                         resolve(true);
                     } else {
                         resolve(false);
