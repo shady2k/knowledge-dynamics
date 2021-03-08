@@ -42,7 +42,7 @@ export default {
     },
     methods: {
         init: function() {
-            this.$store.dispatch('createTodayElement').then(() => {
+            this.$store.dispatch('getTodayElement').then(() => {
                 this.isDataReady = true;
             });
         },

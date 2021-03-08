@@ -11,4 +11,12 @@ export default {
             [8, 9, "a", "b"][~~(r * 3)]
         }${s.slice(15, 18)}-${s.slice(s.length - 12)}`;
     },
+
+    capitalizeFirstLetter: function(text) {
+        if(text && text !== '' && text.length >= 1) {
+            return text[0].toUpperCase() + text.substr(1).toLowerCase();
+        } else {
+            return text;
+        }
+    }
 };

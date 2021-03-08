@@ -1,6 +1,10 @@
+import {
+    Schema,
+    Block,
+    Element
+} from "./class";
 import utils from "./utils";
 const stringifyObject = require('stringify-object');
-const moment = require('moment'); 
 
 export default {
     addBlock(store, obj) {
@@ -306,16 +310,21 @@ export default {
         if(parent) {
             if(parent.blockId !== schema.blockId) {
                 const blockParent = store.getters.getBlockById(parent.blockId);
-                const type = block.type ? ':'+block.type.toUpperCase() : '';
-                const typeParent = blockParent.type ? ':'+blockParent.type.toUpperCase() : '';
-                query = `MERGE (b:Block${type} {blockId: '${schema.blockId}'})-[:RELATED]-(p:Block${typeParent} {blockId: '${parent.blockId}'})
-                            SET b = ${stringifyObject(block)}
-                            SET p = ${stringifyObject(blockParent)}
-                            RETURN id(b)
-                            `;
+                const type = block.type ? ':'+utils.capitalizeFirstLetter(block.type) : '';
+                const typeParent = blockParent.type ? ':'+utils.capitalizeFirstLetter(blockParent.type) : '';
+                query = `MERGE (p:Block${typeParent} {blockId: '${parent.blockId}'})\n`;
+                query += `MERGE (b:Block${type} {blockId: '${schema.blockId}'})-[:RELATED]-(p)\n`;
+                query += `SET b = ${stringifyObject(block)}\n`;
+                query += `SET p = ${stringifyObject(blockParent)}\n`
+                query += `RETURN id(b)`;
+                // query = `MERGE (b:Block${type} {blockId: '${schema.blockId}'})-[:RELATED]-(p:Block${typeParent} {blockId: '${parent.blockId}'})
+                //             SET b = ${stringifyObject(block)}
+                //             SET p = ${stringifyObject(blockParent)}
+                //             RETURN id(b)
+                //             `;
             }
         } else {
-            const type = block.type ? ':'+block.type.toUpperCase() : '';
+            const type = block.type ? ':'+utils.capitalizeFirstLetter(block.type) : '';
             query = `MERGE (b:Block${type} {blockId: '${schema.blockId}'})
                         SET b = ${stringifyObject(block)}
                         RETURN id(b)
@@ -339,23 +348,87 @@ export default {
         }
     },
 
-    createTodayElement(store) {
-        const title = moment().locale('ru').format('LL');
+    createTodayElement(store, block) {
+        const title = store.getters.getTodayJounalTile;
         const blockIdNew = utils.generateUUID();
-        const block = {
+        const newBlock = {
             blockId: blockIdNew,
-            title,
+            title: title,
             data: title,
-            type: 'JOURNAL'
+            type: 'Journal'
         };
 
-        const element = {
-            blockId: blockIdNew
-        };
-        
-        store.commit("createTodayElement", element);
-        store.commit("addBlock", block);
+        if(block) {
+            const element = {
+                blockId: block.blockId
+            };
+            store.commit("createTodayElement", element);
+            store.commit("addBlock", block);
+        } else {
+            const element = {
+                blockId: blockIdNew
+            };
+            store.commit("createTodayElement", element);
+            store.commit("addBlock", newBlock);
+        }
 
         return store.state.element;
-    }
+    },
+
+    getTodayElementFromDB(store) {
+        let resolve = null;
+        let reject = null;
+
+        const title = store.getters.getTodayJounalTile;
+        const query = `MATCH (b:Block:Journal {title: '${title}'}) RETURN b`;
+        if(query) {
+            store.dispatch('queryDB', query).then((response) => {
+                if(response) {
+                    if(response.records.length >= 1 && response.records[0]) {
+                        const blockDb = response.records[0].get('b');
+                        this._vm.$log.debug(blockDb);
+                        
+                        const block = new Block({
+                            blockId: blockDb.properties.blockId,
+                            dbId: blockDb.identity.toNumber(),
+                            title: blockDb.properties.title,
+                            data: blockDb.properties.data,
+                            type: blockDb.properties.type,
+                        });
+                        
+                        store.dispatch('createTodayElement', block);
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
+                } else {
+                    reject();
+                }
+            });
+        }
+
+        return new Promise((resolveP, rejectP) => {
+            resolve = resolveP;
+            reject = rejectP;
+        });
+    },
+
+    getTodayElement(store) {
+        let resolve = null;
+        let reject = null;
+        
+        store.dispatch('getTodayElementFromDB').then((response) => {
+            if(response) {
+                resolve();
+            } else {
+                store.dispatch('createTodayElement');
+                resolve();
+            }
+        });
+
+        return new Promise((resolveP, rejectP) => {
+            resolve = resolveP;
+            reject = rejectP;
+        });
+    },
 };

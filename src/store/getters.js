@@ -1,3 +1,5 @@
+const moment = require('moment'); 
+
 export default {
     getElementTitle: (state, getters) => {
         if(!state.element.blockId) return null;
@@ -198,18 +200,7 @@ export default {
         return this.getters.getBlockById(schema.blockId);
     },
 
-    getSchemaByBlockId: (state, getters) => blockId => {
-        const flat = getters.traversedTree;
-        console.log(flat);
-        // const index = flat.flatMap.get(schemaId);
-        // if(index === (flat.flatArr.length - 1)) {
-        //     return null;
-        // } else {
-        //     return flat.flatArr[index + 1];
-        // }
-    },
-
-    getParentBlockById: (state, getters) => blockId => {
-
-    },
+    getTodayJounalTile: () => {
+        return moment().locale('ru').format('LL');
+    }
 };
