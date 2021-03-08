@@ -109,6 +109,22 @@ export default {
             target,
             index,
         });
+
+        let query = "MATCH (p { blockId: $blockIdParent })-[r:RELATED]-(b { blockId: $blockId })\n";
+        query += 'DELETE r';
+        const params = { 
+            blockIdParent: parent.blockId,
+            blockId: schema.blockId
+        };
+
+        const queryObj = {
+            query,
+            params
+        }
+
+        if(query) {
+            store.dispatch('queryDB', queryObj);
+        }
     },
 
     unIdentBlock(store, obj) {
@@ -283,10 +299,13 @@ export default {
 
     queryDB(store, obj) {
         if(!obj) return;
+        const query = obj.query;
+        const params = obj.params;
+        
         const session = this._vm.$neo4j.getSession();
         return new Promise((resolve) => {
             session
-            .run(obj)
+            .run(query, params)
             .then((res) => {
                 this._vm.$log.debug(res);
                 resolve(res);
@@ -313,7 +332,8 @@ export default {
                 const type = block.type ? ':'+utils.capitalizeFirstLetter(block.type) : '';
                 const typeParent = blockParent.type ? ':'+utils.capitalizeFirstLetter(blockParent.type) : '';
                 query = `MERGE (p:Block${typeParent} {blockId: '${parent.blockId}'})\n`;
-                query += `MERGE (b:Block${type} {blockId: '${schema.blockId}'})-[:RELATED]-(p)\n`;
+                query += `MERGE (b:Block${type} {blockId: '${schema.blockId}'})\n`;
+                query += `MERGE (b)-[:RELATED]-(p)\n`;
                 query += `SET b = ${stringifyObject(block)}\n`;
                 query += `SET p = ${stringifyObject(blockParent)}\n`
                 query += `RETURN id(b)`;
@@ -331,7 +351,8 @@ export default {
                         `;
         }
         if(query) {
-            store.dispatch('queryDB', query).then((response) => {
+            const queryObj = { query };
+            store.dispatch('queryDB', queryObj).then((response) => {
                 if(response) {
                     if(response.records.length === 1 && response.records[0]) {
                         const dbId = response.records[0].get('id(b)').toNumber();
@@ -380,9 +401,17 @@ export default {
         let reject = null;
 
         const title = store.getters.getTodayJounalTile;
-        const query = `MATCH (p:Block:Journal {title: '${title}'})-[:RELATED]-(r) RETURN p, r`;
+        const query = `MATCH f=(p:Block:Journal {title: '${title}'})-[:RELATED*]-(r) RETURN p, f`;
+        /*
+        MATCH f=(p:Block:Journal)-[:RELATED*]-(r)
+        WHERE id(p) = 140
+        WITH COLLECT(f) AS ps
+        CALL apoc.convert.toTree(ps) YIELD value
+        RETURN value AS subtree
+        */
         if(query) {
-            store.dispatch('queryDB', query).then((response) => {
+            const queryObj = { query };
+            store.dispatch('queryDB', queryObj).then((response) => {
                 if(response) {
                     if(response.records.length >= 1) {
                         if(response.records[0]) {
@@ -394,49 +423,12 @@ export default {
                                 data: blockDb.properties.data,
                                 type: blockDb.properties.type,
                             });
-                            store.dispatch('createTodayElement', block);
+                            store.dispatch('createTodayElement', block).then(() => {
+                                store.dispatch('parseDBResponse', response).then(() => {
+                                    resolve(true);
+                                });
+                            })
                         }
-                        
-                        response.records.forEach((item) => {
-                            const rootSchema = store.getters.getRootSchema;
-                            const blockDbParent = response.records[0].get('p');
-
-                            if(!store.getters.getBlockById(blockDbParent.properties.blockId)) {
-                                const block = new Block({
-                                    blockId: blockDbParent.properties.blockId,
-                                    dbId: blockDbParent.identity.toNumber(),
-                                    title: blockDbParent.properties.title,
-                                    data: blockDbParent.properties.data,
-                                    type: blockDbParent.properties.type,
-                                });
-                                store.commit('addBlock', block);
-
-                                store.commit("addSchema", {
-                                    arr: rootSchema.children,
-                                    blockId: blockDbParent.properties.blockId,
-                                    parentId: rootSchema.schemaId,
-                                    type: "push",
-                                });
-                            }
-
-                            const blockDb = item.get('r');
-                            const block = new Block({
-                                blockId: blockDb.properties.blockId,
-                                dbId: blockDb.identity.toNumber(),
-                                title: blockDb.properties.title,
-                                data: blockDb.properties.data,
-                                type: blockDb.properties.type,
-                            });
-                            store.commit('addBlock', block);
-
-                            store.commit("addSchema", {
-                                arr: rootSchema.children,
-                                blockId: blockDb.properties.blockId,
-                                parentId: null,
-                                type: "push",
-                            });
-                        });
-                        resolve(true);
                     } else {
                         resolve(false);
                     }
@@ -445,6 +437,71 @@ export default {
                 }
             });
         }
+
+        return new Promise((resolveP, rejectP) => {
+            resolve = resolveP;
+            reject = rejectP;
+        });
+    },
+
+    parseDBResponse(store, response) {
+        let resolve = null;
+        let reject = null;
+
+        this._vm.$log.debug('nodeStart', store.state.element);
+        response.records.forEach((item) => {
+            const rootSchema = store.getters.getRootSchema;
+            // const blockDbParent = response.records[0].get('p');
+
+            // if(!store.getters.getBlockById(blockDbParent.properties.blockId)) {
+            //     const block = new Block({
+            //         blockId: blockDbParent.properties.blockId,
+            //         dbId: blockDbParent.identity.toNumber(),
+            //         title: blockDbParent.properties.title,
+            //         data: blockDbParent.properties.data,
+            //         type: blockDbParent.properties.type,
+            //     });
+            //     store.commit('addBlock', block);
+
+            //     store.commit("addSchema", {
+            //         arr: rootSchema.children,
+            //         blockId: blockDbParent.properties.blockId,
+            //         parentId: rootSchema.schemaId,
+            //         type: "push",
+            //     });
+            // }
+
+            const pathDb = item.get('f');
+            const segments = pathDb.segments;
+            segments.forEach((pathSegment) => {
+                const nodeStart = pathSegment.start;
+                const nodeEnd = pathSegment.end;
+                const parentSchema = store.getters.getSchemaById(nodeStart.properties.blockId);
+
+                const blockDb = nodeEnd;
+
+                this._vm.$log.debug('nodeStart', nodeStart);
+                this._vm.$log.debug('nodeEnd', nodeEnd);
+
+                const block = new Block({
+                    blockId: blockDb.properties.blockId,
+                    dbId: blockDb.identity.toNumber(),
+                    title: blockDb.properties.title,
+                    data: blockDb.properties.data,
+                    type: blockDb.properties.type,
+                });
+                store.commit('addBlock', block);
+
+                store.commit("addSchema", {
+                    arr: parentSchema.children,
+                    blockId: blockDb.properties.blockId,
+                    parentId: nodeStart.properties.blockId,
+                    type: "push",
+                });
+            });
+
+            resolve();
+        });
 
         return new Promise((resolveP, rejectP) => {
             resolve = resolveP;

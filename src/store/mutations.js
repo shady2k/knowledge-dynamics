@@ -105,6 +105,8 @@ export default {
         } else if (type === "splice") {
             arr.splice(index, 0, schema);
         }
+
+        state.element = Object.assign({}, state.element);
     },
 
     swapBlocks: function (state, obj) {
