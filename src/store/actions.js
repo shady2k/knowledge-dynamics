@@ -192,7 +192,7 @@ export default {
             targetIndex = prevBlockIndex + 1;
         }
 
-        if (!targetIndex) return;
+        if (targetIndex === null) return;
 
         const index = store.getters.getIndexInArrayBySchemaId({
             arr: parent.children,
