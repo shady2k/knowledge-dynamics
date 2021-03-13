@@ -80,6 +80,28 @@ export default {
         }
     },
 
+    deleteRelation(store, obj) {
+        if(!obj.schema || !obj.parentSchema) return;
+        const schema = obj.schema;
+        const parent = obj.parentSchema;
+
+        let query = "MATCH (p { blockId: $blockIdParent })-[r:RELATED]-(b { blockId: $blockId })\n";
+        query += 'DELETE r';
+        const params = { 
+            blockIdParent: parent.blockId,
+            blockId: schema.blockId
+        };
+
+        const queryObj = {
+            query,
+            params
+        }
+
+        if(query) {
+            store.dispatch('queryDB', queryObj);
+        }
+    },
+
     identBlock(store, obj) {
         const schema = obj;
 
@@ -103,28 +125,14 @@ export default {
 
         if (index === -1) return;
 
+        store.dispatch("deleteRelation", { schema, parentSchema: parent });
+        
         store.commit("identBlock", {
             schema,
             parent,
             target,
             index,
         });
-
-        let query = "MATCH (p { blockId: $blockIdParent })-[r:RELATED]-(b { blockId: $blockId })\n";
-        query += 'DELETE r';
-        const params = { 
-            blockIdParent: parent.blockId,
-            blockId: schema.blockId
-        };
-
-        const queryObj = {
-            query,
-            params
-        }
-
-        if(query) {
-            store.dispatch('queryDB', queryObj);
-        }
     },
 
     unIdentBlock(store, obj) {
@@ -193,6 +201,8 @@ export default {
 
         if (index === -1) return;
 
+        store.dispatch("deleteRelation", { schema, parentSchema: parent });
+        
         store.commit("unIdentBlock", {
             schema,
             parent,
@@ -331,12 +341,14 @@ export default {
                 const blockParent = store.getters.getBlockById(parent.blockId);
                 const type = block.type ? ':'+utils.capitalizeFirstLetter(block.type) : '';
                 const typeParent = blockParent.type ? ':'+utils.capitalizeFirstLetter(blockParent.type) : '';
-                query = `MERGE (p:Block${typeParent} {blockId: '${parent.blockId}'})\n`;
-                query += `MERGE (b:Block${type} {blockId: '${schema.blockId}'})\n`;
-                query += `MERGE (b)-[:RELATED]-(p)\n`;
-                query += `SET b = ${stringifyObject(block)}\n`;
-                query += `SET p = ${stringifyObject(blockParent)}\n`
-                query += `RETURN id(b)`;
+                query = `
+                    MERGE (p:Block${typeParent} {blockId: '${parent.blockId}'})
+                    MERGE (b:Block${type} {blockId: '${schema.blockId}'})
+                    MERGE (b)-[:RELATED]-(p)
+                    SET b = ${stringifyObject(block)}
+                    SET p = ${stringifyObject(blockParent)}
+                    RETURN id(b)
+                `;
                 // query = `MERGE (b:Block${type} {blockId: '${schema.blockId}'})-[:RELATED]-(p:Block${typeParent} {blockId: '${parent.blockId}'})
                 //             SET b = ${stringifyObject(block)}
                 //             SET p = ${stringifyObject(blockParent)}
@@ -422,7 +434,7 @@ export default {
 
                     const newSchema = store.getters.getSchemaById(schemaIdNew);
 
-                    traverse(newSchema, item, schema.schemaId);
+                    traverse(newSchema, item, schemaIdNew);
                 });
             }
         }
@@ -432,10 +444,12 @@ export default {
 
         const title = store.getters.getTodayJounalTile;
         //const query = `MATCH f=(p:Block:Journal {title: '${title}'})-[:RELATED*]-(r) RETURN p, f`;
-        let query = `MATCH f=(p:Block:Journal {title: '${title}'})-[:RELATED*]-(r)\n`;
-        query += `WITH COLLECT(f) AS ps\n`;
-        query += `CALL apoc.convert.toTree(ps) YIELD value\n`;
-        query += `RETURN value AS subtree`;
+        let query = `
+            MATCH f=(p:Block:Journal {title: '${title}'})-[:RELATED*]-(r)
+            WITH COLLECT(f) AS ps
+            CALL apoc.convert.toTree(ps) YIELD value\
+            RETURN value AS subtree
+        `;
 
         if(query) {
             const queryObj = { query };
@@ -444,11 +458,14 @@ export default {
                     if(response.records.length >= 1) {
                         if(response.records[0]) {
                             const elementDB = response.records[0].get('subtree');
-                            this._vm.$log.debug(elementDB);
+                            if(!elementDB._id) {
+                                resolve(false);
+                                return;
+                            }
 
                             const block = new Block({
                                 blockId: elementDB.blockId,
-                                dbId: elementDB._id.toNumber(),
+                                dbId: elementDB._id ? elementDB._id.toNumber() : null,
                                 title: elementDB.title,
                                 data: elementDB.data,
                                 type: elementDB.type,
